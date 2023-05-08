@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import * as pallete from '@/styles/variables'
-import Footer from '@/components/footer/footer'
+// import Footer from '@/components/footer/footer'
 import Scrollbars from '@/components/utility/customScrollbar'
 import Head from 'next/head'
 import useWindowSize from '@/helpers/useWindowSize'
@@ -28,6 +28,11 @@ const arrayPath = [
   {
     path: '/error',
     name: 'error',
+    allowed: 'any',
+  },
+  {
+    path: '/dashboard',
+    name: 'dashboard',
     allowed: 'any',
   },
 ]
@@ -182,10 +187,10 @@ export default function Layout({ children }) {
         <Scrollbars style={{minHeight: '100vh'}} ref={scrollbar} >
           {children}
 
-          {
+          {/* {
             router.asPath === '/404' ? null : 
             <Footer />
-          }
+          } */}
         </Scrollbars>
       }
     </>

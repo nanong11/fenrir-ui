@@ -10,9 +10,9 @@ const nextConfig = {
   swcMinify: true,
   compiler: {
     styledComponents: true,
-    removeConsole: {
+    /* removeConsole: {
       exclude: process.env.NODE_ENV === 'production' ? ['error', 'warn'] : [],
-    },
+    }, */
   },
   images: {
     domains: [
