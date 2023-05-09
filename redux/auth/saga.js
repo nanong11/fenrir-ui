@@ -23,9 +23,6 @@ export function* login() {
                 yield put({
                     type: actions.LOGOUT_RESET,
                 });
-                yield put({
-                    type: usersActions.LOAD_PROFILE_PHOTO_RESET,
-                });
             } else {
                 yield put({
                     type: actions.LOGIN_FAILED,

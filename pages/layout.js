@@ -33,6 +33,11 @@ const arrayPath = [
   {
     path: '/dashboard',
     name: 'dashboard',
+    allowed: 'users',
+  },
+  {
+    path: '/login',
+    name: 'login',
     allowed: 'any',
   },
 ]
@@ -48,8 +53,6 @@ export default function Layout({ children }) {
 
   const usersData = useSelector(state => state.authReducer.usersData)
   const userId = usersData && usersData.data ? usersData.data._id : null
-  const loginLoading = useSelector(state => state.authReducer.loginLoading)
-  const loginFailed = useSelector(state => state.authReducer.loginFailed)
   const logoutLoading = useSelector(state => state.authReducer.logoutLoading)
   const authenticateLoading = useSelector(state => state.authReducer.authenticateLoading)
   const authenticateFailed = useSelector(state => state.authReducer.authenticateFailed)
@@ -68,6 +71,9 @@ export default function Layout({ children }) {
       if (isExist) {
         // console.log(isExist)
         if (isExist.allowed === 'any') {
+          if (isExist.path === '/') {
+            router.push('/login')
+          }
           setLoading(false)
         } else if (isExist.allowed === 'users') {
           if (usersData) {
@@ -78,6 +84,7 @@ export default function Layout({ children }) {
           }
         }
       } else {
+        router.push('/404')
         setLoading(false)
       }
     }
@@ -107,12 +114,10 @@ export default function Layout({ children }) {
     loading,
     router,
     scrollbarUseRef,
-    loginLoading,
     logoutLoading,
     authenticateLoading,
     usersData,
     userId,
-    loginFailed,
     authenticateFailed,
   ])
 
