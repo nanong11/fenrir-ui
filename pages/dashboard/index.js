@@ -4,6 +4,7 @@ import { Layout, Menu, theme, Typography, Button, Avatar, Space } from 'antd';
 // import { useSelector } from 'react-redux';
 import { MenuFoldOutlined, MenuUnfoldOutlined, GroupOutlined, FileSearchOutlined, UsergroupAddOutlined, UserOutlined, AntDesignOutlined, ProfileOutlined } from '@ant-design/icons';
 // import * as pallete from '@/styles/variables';
+import Profile from '@/components/profile/profile';
 
 const { Header, Content, Sider } = Layout;
 const { Text } = Typography;
@@ -17,7 +18,7 @@ export default function Dashboard() {
 
   const [collapse, setCollapse] = useState(true)
   const [broken, setBroken] = useState(null)
-  const [selectedMenu, setSelectedMenu] = useState('PROFILE')
+  const [selectedMenu, setSelectedMenu] = useState(<Profile />)
   const [hideContent, setHideContent] = useState(false)
 
   const sideMenuItems = [
@@ -64,9 +65,18 @@ export default function Dashboard() {
   ]
 
   const handleMenuItemOnClick = (value) => {
-    setSelectedMenu(value.key)
     setCollapse(!collapse)
     setHideContent(false)
+
+    switch (value.key) {
+      case 'PROFILE':
+        setSelectedMenu(<Profile />)
+        break;
+        
+      default:
+        setSelectedMenu(value.key)
+        break;
+    }
   }
 
   const handleMenuBtnOnClick = () => {
@@ -171,9 +181,8 @@ export default function Dashboard() {
                 background: colorBgContainer,
               }}
               >
-                <Text>{selectedMenu}</Text>
+                {selectedMenu}
               </div>
-
             }
           </Content>
         </Layout>
