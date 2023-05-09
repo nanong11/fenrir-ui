@@ -18,11 +18,11 @@ const actions = {
     UPDATE_USER_LOADING: "UPDATE_USER_LOADING",
     UPDATE_USER_RESET: "UPDATE_USER_RESET",
 
-    LOAD_USER_PROFILE_FROM_POST: "LOAD_USER_PROFILE_FROM_POST",
-    LOAD_USER_PROFILE_FROM_POST_SUCCESS: "LOAD_USER_PROFILE_FROM_POST_SUCCESS",
-    LOAD_USER_PROFILE_FROM_POST_LOADING: "LOAD_USER_PROFILE_FROM_POST_LOADING",
-    LOAD_USER_PROFILE_FROM_POST_FAILED: "LOAD_USER_PROFILE_FROM_POST_FAILED",
-    LOAD_USER_PROFILE_FROM_POST_RESET: "LOAD_USER_PROFILE_FROM_POST_RESET",
+    FETCH_ALL_USERS: "FETCH_ALL_USERS",
+    FETCH_ALL_USERS_SUCCESS: "FETCH_ALL_USERS_SUCCESS",
+    FETCH_ALL_USERS_LOADING: "FETCH_ALL_USERS_LOADING",
+    FETCH_ALL_USERS_FAILED: "FETCH_ALL_USERS_FAILED",
+    FETCH_ALL_USERS_RESET: "FETCH_ALL_USERS_RESET",
 
     // * Declare the actions function *
     signUp: (payload) => ({
@@ -52,13 +52,12 @@ const actions = {
         type: actions.UPDATE_USER_RESET,
     }),
 
-    loadUserProfileFromPost: (payload) => ({
-        type: actions.LOAD_USER_PROFILE_FROM_POST,
-        payload
+    fetchAllUsers: () => ({
+        type: actions.FETCH_ALL_USERS
     }),
 
-    loadUserProfileFromPostReset: () => ({
-        type: actions.LOAD_USER_PROFILE_FROM_POST_RESET,
+    fetchAllUsersReset: () => ({
+        type: actions.FETCH_ALL_USERS_RESET,
     }),
 }
   

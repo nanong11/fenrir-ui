@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import DashboardStyled from './dashboard.styles'
 import { Layout, Menu, theme, Typography, Button, Avatar, Space } from 'antd';
 // import { useSelector } from 'react-redux';
@@ -6,11 +6,17 @@ import { MenuFoldOutlined, MenuUnfoldOutlined, GroupOutlined, FileSearchOutlined
 // import * as pallete from '@/styles/variables';
 import Profile from '@/components/profile/profile';
 import authActions from '@/redux/auth/actions'
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import usersAction from '@/redux/users/actions'
+import Users from '@/components/users/users';
 
 const {
   logout,
 } = authActions
+
+const {
+  fetchAllUsers,
+} = usersAction
 
 const { Header, Content, Sider } = Layout;
 const { Text } = Typography;
@@ -22,23 +28,41 @@ export default function Dashboard() {
 
   const dispatch = useDispatch()
   // const view = useSelector(state => state.utilityReducer.view)
+  const usersData = useSelector(state => state.authReducer.usersData)
+  const role = usersData?.data?.role
+  const allUsers = useSelector(state => state.usersReducer.allUsers)
+  const allUsersLoading = useSelector(state => state.usersReducer.allUsersLoading)
+  const allUsersFailed = useSelector(state => state.usersReducer.allUsersFailed)
 
   const [collapse, setCollapse] = useState(true)
   const [broken, setBroken] = useState(null)
-  const [selectedMenu, setSelectedMenu] = useState(<Profile />)
+  const [selectedMenu, setSelectedMenu] = useState(<Profile usersData={usersData} />)
   const [hideContent, setHideContent] = useState(false)
 
+  useEffect(() => {
+    if (role === 'admin' && !allUsers && !allUsersLoading && !allUsersFailed) {
+      dispatch(fetchAllUsers())
+    }
+  
+  }, [
+    dispatch,
+    role,
+    allUsers,
+    allUsersLoading,
+    allUsersFailed,
+  ])
+  
   const sideMenuItems = [
     {
       key: 'PROFILE',
       icon: <ProfileOutlined />,
       label: `PROFILE`,
-      allowed: 'any'
+      allowed: 'user'
     },
     {
       icon: <GroupOutlined />,
       label: `CHANNELS`,
-      allowed: 'any',
+      allowed: 'user',
       children: [
         {
           key: 'Add Channel',
@@ -48,12 +72,19 @@ export default function Dashboard() {
         {
           key: 'Attendance',
           label: 'Attendance',
-          allowed: 'any'
+          allowed: 'user'
         },
-      ].map((item, index) => {
-        return {
-          key: item.key,
-          label: item.label
+      ].map((item) => {
+        if (role === 'admin') {
+          return {
+            key: item.key,
+            label: item.label
+          }
+        } else if (role === item.allowed) {
+          return {
+            key: item.key,
+            label: item.label
+          }
         }
       })
     },
@@ -61,7 +92,7 @@ export default function Dashboard() {
       key: 'FILES',
       icon: <FileSearchOutlined />,
       label: `FILES`,
-      allowed: 'any'
+      allowed: 'user'
     },
     {
       key: 'USERS',
@@ -71,13 +102,35 @@ export default function Dashboard() {
     },
   ]
 
+  const filteredSideMenuItems = sideMenuItems.map((item) => {
+      if (role === 'admin') {
+        return {
+          key: item.key,
+          icon: item.icon,
+          label: item.label,
+          children: item.children
+        }
+      } else if (role === item.allowed ) {
+        return {
+          key: item.key,
+          icon: item.icon,
+          label: item.label,
+          children: item.children
+        }
+      }
+  })
+
   const handleMenuItemOnClick = (value) => {
     setCollapse(!collapse)
     setHideContent(false)
 
     switch (value.key) {
       case 'PROFILE':
-        setSelectedMenu(<Profile />)
+        setSelectedMenu(<Profile usersData={usersData} />)
+        break;
+
+      case 'USERS':
+        setSelectedMenu(<Users allUsers={allUsers} />)
         break;
 
       default:
@@ -150,14 +203,7 @@ export default function Dashboard() {
               <Menu
               defaultSelectedKeys={['PROFILE']}
               mode="inline"
-              items={sideMenuItems.map(
-                (item, index) => ({
-                  key: item.key,
-                  icon: item.icon,
-                  label: item.label,
-                  children: item.children
-                }),
-              )}
+              items={filteredSideMenuItems}
               onClick={(e) => handleMenuItemOnClick(e)}
               style={{
                 background: colorPrimaryBg,

@@ -1,12 +1,11 @@
 import React from 'react'
 import ProfileStyled from './profile.styles'
 import { Space, Typography } from 'antd'
-import { useSelector } from 'react-redux'
 
-const { Text, Title } = Typography
+const { Title } = Typography
 
-export default function Profile() {
-  const usersData = useSelector(state => state.authReducer.usersData)
+export default function Profile(props) {
+  const { usersData } = props
 
   return (
     <ProfileStyled>
@@ -14,9 +13,8 @@ export default function Profile() {
       <Space
       direction='vertical'
       >
-        <Title level={5} style={{margin: '0 0 10px 0'}}>Name: {usersData.data.firstName} {usersData.data.lastName}</Title>
-        <Title level={5} style={{margin: '0 0 10px 0'}}>Mobile: {usersData.data.moble}</Title>
-        <Title level={5} style={{margin: '0 0 10px 0'}}>Email: {usersData.data.email}</Title>
+        <Title level={5} style={{margin: '0 0 10px 0'}}>Name: {usersData?.data?.firstName} {usersData?.data?.lastName}</Title>
+        <Title level={5} style={{margin: '0 0 10px 0'}}>Email: {usersData?.data?.email}</Title>
       </Space>
     </ProfileStyled>
   )

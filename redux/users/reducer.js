@@ -10,9 +10,9 @@ const initialState = {
     isMobileEmailLoading: false,
     isMobileEmailFailed: null,
 
-    updateUserSuccess: null,
-    updateUserLoading: null,
-    updateUserFailed: null,
+    allUsers: null,
+    allUsersLoading: false,
+    allUsersFailed: null,
 }
 
 // Define reducer function
@@ -98,6 +98,32 @@ export default function usersReducer(state = initialState, action) {
                 updateUserSuccess: null,
                 updateUserFailed: null,
                 updateUserLoading: null,
+            }
+        case actions.FETCH_ALL_USERS_SUCCESS:
+            return {
+                ...state,
+                allUsers: action.payload,
+                allUsersFailed: null,
+                allUsersLoading: false,
+        }
+        case actions.FETCH_ALL_USERS_LOADING:
+            return {
+                ...state,
+                allUsersLoading: true,
+            }
+        case actions.FETCH_ALL_USERS_FAILED:
+            return {
+                ...state,
+                allUsersFailed: action.payload,
+                allUsers: null,
+                allUsersLoading: false,
+            }
+        case actions.FETCH_ALL_USERS_RESET:
+            return {
+                ...state,
+                allUsers: null,
+                allUsersFailed: null,
+                allUsersLoading: false,
             }
         
         default:

@@ -180,6 +180,37 @@ export function* checkMobileEmail() {
     });
 }
 
+export function* fetchAllUsers() {
+    yield takeEvery('FETCH_ALL_USERS', function* () {
+        try {
+            yield put({
+                type: actions.FETCH_ALL_USERS_LOADING,
+            });
+
+            const apiResult = yield fetchAllUsersRequest();
+            // console.log('apiResult', apiResult)
+            const result = apiResult.data;
+
+            if (apiResult.status === 200) {
+                yield put({
+                    type: actions.FETCH_ALL_USERS_SUCCESS,
+                    payload: result,
+                });
+            } else {
+                yield put({
+                    type: actions.FETCH_ALL_USERS_FAILED,
+                    payload: result,
+                });
+            }
+        } catch (error) {
+            yield put({
+                type: actions.FETCH_ALL_USERS_FAILED,
+                payload: error,
+            });
+        }
+    });
+}
+
 // FUNCTION REQUESTS START HERE
 function signupRequest(payload) {
     return post(`/users/create`, payload);
@@ -197,10 +228,15 @@ function checkMobileEmailRequest(payload) {
     return post(`/users/check_mobile_email`, payload);  
 }
 
+function fetchAllUsersRequest() {
+    return get(`/users`);  
+}
+
 export default function* rootSaga() {
     yield all([
         fork(signUp),
         fork(checkMobileEmail),
         fork(updateUser),
+        fork(fetchAllUsers),
     ])
 }
