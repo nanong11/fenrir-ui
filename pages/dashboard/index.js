@@ -5,6 +5,12 @@ import { Layout, Menu, theme, Typography, Button, Avatar, Space } from 'antd';
 import { MenuFoldOutlined, MenuUnfoldOutlined, GroupOutlined, FileSearchOutlined, UsergroupAddOutlined, UserOutlined, AntDesignOutlined, ProfileOutlined } from '@ant-design/icons';
 // import * as pallete from '@/styles/variables';
 import Profile from '@/components/profile/profile';
+import authActions from '@/redux/auth/actions'
+import { useDispatch } from 'react-redux';
+
+const {
+  logout,
+} = authActions
 
 const { Header, Content, Sider } = Layout;
 const { Text } = Typography;
@@ -14,6 +20,7 @@ export default function Dashboard() {
     token: { colorBgContainer, colorPrimaryBg, colorPrimary },
   } = theme.useToken();
 
+  const dispatch = useDispatch()
   // const view = useSelector(state => state.utilityReducer.view)
 
   const [collapse, setCollapse] = useState(true)
@@ -72,7 +79,7 @@ export default function Dashboard() {
       case 'PROFILE':
         setSelectedMenu(<Profile />)
         break;
-        
+
       default:
         setSelectedMenu(value.key)
         break;
@@ -81,7 +88,11 @@ export default function Dashboard() {
 
   const handleMenuBtnOnClick = () => {
     setCollapse(!collapse)
-    setHideContent(collapse ? true : false)
+    setHideContent(collapse)
+  }
+
+  const handleLogoutOnClick = () => {
+    dispatch(logout())
   }
 
   return (
@@ -107,31 +118,59 @@ export default function Dashboard() {
           <Space
           style={{
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center',
+            justifyContent: 'space-between',
             width: broken ? '85vw' : '200px',
-            height: '64px',
-            margin: '0 0 10px 0',
+            height: '100%',
           }}
           >
-            <Avatar shape="square" size="large" icon={<UserOutlined />} />
+            <Space
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              width: broken ? '85vw' : '200px',
+              rowGap: '10px'
+            }}
+            >
+              <Space
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: broken ? '85vw' : '200px',
+                height: '64px',
+                // margin: '0 0 10px 0',
+              }}
+              >
+                <Avatar shape="square" size="large" icon={<UserOutlined />} />
+              </Space>
+              <Menu
+              defaultSelectedKeys={['PROFILE']}
+              mode="inline"
+              items={sideMenuItems.map(
+                (item, index) => ({
+                  key: item.key,
+                  icon: item.icon,
+                  label: item.label,
+                  children: item.children
+                }),
+              )}
+              onClick={(e) => handleMenuItemOnClick(e)}
+              style={{
+                background: colorPrimaryBg,
+              }}
+              />
+            </Space>
+
+            <Space
+            style={{ height: '64px'}}
+            >
+              <Button onClick={handleLogoutOnClick}>LOGOUT</Button>
+            </Space>
           </Space>
-          <Menu
-          defaultSelectedKeys={['PROFILE']}
-          mode="inline"
-          items={sideMenuItems.map(
-            (item, index) => ({
-              key: item.key,
-              icon: item.icon,
-              label: item.label,
-              children: item.children
-            }),
-          )}
-          onClick={(e) => handleMenuItemOnClick(e)}
-          style={{
-            background: colorPrimaryBg,
-          }}
-          />
         </Sider>
 
         <Layout>

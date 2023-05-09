@@ -87,7 +87,6 @@ export default function Login() {
             { required: true, message: 'Please input your Username!' },
             {
               validator: async (_, value) => {
-                console.log('value', value)
                 if (value && loginFailed) {
                   return Promise.reject();
                 }
@@ -104,7 +103,6 @@ export default function Login() {
             { required: true, message: 'Please input your Password!' },
             {
               validator: async (_, value) => {
-                console.log('value', value)
                 if (value && loginFailed) {
                   return Promise.reject();
                 }

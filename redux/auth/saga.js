@@ -46,6 +46,9 @@ export function* login() {
 
 export function* logout() {
     yield takeEvery('LOGOUT', function* () {
+        yield localStorage.removeItem('idToken');
+        yield window.location.reload();
+        
         try {
             yield put({
                 type: actions.LOGOUT_LOADING,
@@ -56,8 +59,6 @@ export function* logout() {
             const result = apiResult.data;
             
             if (apiResult.status === 200) {
-                yield localStorage.removeItem('idToken');
-                yield window.location.reload();
                 yield put({
                     type: actions.LOGOUT_SUCCESS,
                     payload: result,
