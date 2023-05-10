@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import UsersStyled from './users.styles'
-import { Button, Form, Input, Modal, Popconfirm, Select, Space, Table, Typography, message, theme } from 'antd'
+import { Button, Form, Input, Popconfirm, Select, Space, Table, Typography, message, theme } from 'antd'
 import usersActions from '@/redux/users/actions'
 import { useDispatch, useSelector } from 'react-redux'
 import { SearchOutlined } from '@ant-design/icons'

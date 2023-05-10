@@ -13,7 +13,7 @@ export default function Profile(props) {
       <Space
       direction='vertical'
       >
-        <Title level={5} style={{margin: '0 0 10px 0'}}>Name: {usersData?.data?.firstName} {usersData?.data?.lastName}</Title>
+        <Title level={5} style={{margin: '0 0 10px 0'}}>Name: {usersData?.data?.name}</Title>
         <Title level={5} style={{margin: '0 0 10px 0'}}>Email: {usersData?.data?.email}</Title>
       </Space>
     </ProfileStyled>
