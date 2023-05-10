@@ -108,15 +108,13 @@ export function* updateUser() {
             const result = apiResult.data;
 
             if (apiResult.status === 200) {
-                yield put({
-                    type: authactions.AUTHENTICATE_SUCCESS,
-                    payload: result,
-                });
+                // yield put({
+                //     type: authactions.AUTHENTICATE_SUCCESS,
+                //     payload: result,
+                // });
                 yield put({
                     type: actions.UPDATE_USER_SUCCESS,
-                    payload: {
-                        message: 'Updating User Account Success'
-                    }
+                    payload: result,
                 });
             } else {
                 yield put({
@@ -131,7 +129,7 @@ export function* updateUser() {
             yield put({
                 type: actions.UPDATE_USER_FAILED,
                 payload: {
-                    data: result,
+                    data: error,
                     message: 'Updating User Account Error'
                 }
             });

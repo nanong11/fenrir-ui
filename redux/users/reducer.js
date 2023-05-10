@@ -6,6 +6,10 @@ const initialState = {
     signupLoading: false,
     signupFailed: null,
 
+    updateUserSuccess: null,
+    updateUserFailed: null,
+    updateUserLoading: false,
+
     isMobileEmailExist: null,
     isMobileEmailLoading: false,
     isMobileEmailFailed: null,
@@ -56,8 +60,6 @@ export default function usersReducer(state = initialState, action) {
             return {
                 ...state,
                 isMobileEmailLoading: true,
-                isMobileEmailExist: null,
-                isMobileEmailFailed: null,
             }
         case actions.CHECK_MOBILE_EMAIL_FAILED:
             return {
@@ -97,7 +99,7 @@ export default function usersReducer(state = initialState, action) {
                 ...state,
                 updateUserSuccess: null,
                 updateUserFailed: null,
-                updateUserLoading: null,
+                updateUserLoading: false,
             }
         case actions.FETCH_ALL_USERS_SUCCESS:
             return {
