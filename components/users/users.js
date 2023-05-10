@@ -1,17 +1,250 @@
 import React, { useEffect, useRef, useState } from 'react'
 import UsersStyled from './users.styles'
-import { Button, Form, Input, Popconfirm, Select, Space, Table, Typography, message, theme } from 'antd'
+import { Button, Form, Input, Modal, Popconfirm, Select, Space, Table, Typography, message, theme } from 'antd'
 import usersActions from '@/redux/users/actions'
 import { useDispatch, useSelector } from 'react-redux'
-import { SearchOutlined } from '@ant-design/icons'
+import { PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import Highlighter from 'react-highlight-words';
 
 const {
   updateUser,
   updateUserReset,
+  signUp,
+  signUpReset,
 } = usersActions
 
-const { Title } = Typography
+const { Title, Text } = Typography
+
+const AddUserModal = (props) => {
+  const {
+    signupLoading,
+    showAddUserModal,
+    setShowAddUserModal,
+    colorPrimaryBg,
+    borderRadius,
+    addUser,
+  } = props
+
+  return (
+    <Modal
+    open={showAddUserModal} 
+    footer={null} 
+    closable={false}
+    onCancel={() => setShowAddUserModal(false)}
+    destroyOnClose
+    style={{
+      minWidth: '300px',
+    }}
+    >
+      <Form
+      name='AddUserModal'
+      onFinish={addUser}
+      style={{
+        padding: '16px',
+        background: colorPrimaryBg,
+        borderRadius: borderRadius,
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+      >
+        <Form.Item
+        name='username'
+        rules={[
+          {
+            validator: async (_, value) => {
+              if (value) {
+                const isUserNameValid = /^[a-z0-9_\.]+$/.test(value)
+                if (isUserNameValid) {
+                  return Promise.resolve();
+                }
+                
+                return Promise.reject('alphanumeric . _ only!');
+              }
+
+              return Promise.reject('Please input Username!');
+            },
+          },
+        ]}
+        >
+          <Input
+          placeholder='username'
+          disabled={signupLoading}
+          loading={signupLoading}
+          />
+        </Form.Item>
+
+        <Form.Item
+        name='name'
+        rules={[
+          {
+            validator: async (_, value) => {
+              if (value) {
+                const isNameValid = /^[ñÑA-Za-z\s]*$/.test(value)
+                if (isNameValid) {
+                  return Promise.resolve();
+                }
+                
+                return Promise.reject('Please input valid name!');
+              }
+
+              return Promise.reject('Please input Name!');
+            },
+          },
+        ]}
+        >
+          <Input
+          placeholder='Name'
+          disabled={signupLoading}
+          loading={signupLoading}
+          />
+        </Form.Item>
+          
+        <Form.Item
+        name='email'
+        rules={[
+          {
+            validator: async (_, value) => {
+              if (value) {
+                const isEmailValid = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value);
+                if (isEmailValid) {
+                  return Promise.resolve();
+                }
+                
+                return Promise.reject('Please input valid email!');
+              }
+
+              return Promise.resolve();
+            },
+          },
+        ]}
+        >
+          <Input
+          placeholder='Email'
+          disabled={signupLoading}
+          loading={signupLoading}
+          />
+        </Form.Item>
+        
+        <Form.Item
+        name='role'
+        rules={[
+          {
+            required: true,
+            message: 'Please choose a role!'
+          },
+        ]}
+        >
+          <Select
+          style={{ width: 120 }}
+          placeholder='Role'
+          options={[
+            { value: 'User', label: 'User' },
+            { value: 'Admin', label: 'Admin' },
+          ]}
+          disabled={signupLoading}
+          loading={signupLoading}
+          />
+        </Form.Item>
+        
+        <Space
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          margin: '24px 0 0',
+        }}
+        >
+          <Form.Item style={{margin: 0}}>
+            <Button onClick={() => setShowAddUserModal(false)} style={{width: 80}} disabled={signupLoading}>
+              CANCEL
+            </Button>
+          </Form.Item>
+
+          <Form.Item style={{margin: 0}}>
+            <Button type='primary' htmlType='submit' style={{width: 80}} loading={signupLoading}>
+              SAVE
+            </Button>
+          </Form.Item>
+        </Space>
+      </Form>
+    </Modal>
+  )
+}
+
+const PasswordModal = (props) => {
+  const {
+    showPasswordModal,
+    setShowPasswordModal,
+    newUsernameAndPassword,
+    colorPrimaryBg,
+    borderRadius,
+  } = props
+
+  console.log('newUsernameAndPassword', newUsernameAndPassword)
+  return (
+    <Modal
+    title='ADDED NEW USER'
+    open={showPasswordModal} 
+    footer={null} 
+    closable={false}
+    destroyOnClose
+    width='300px'
+    style={{
+      textAlign: 'center',
+      // background: 'red'
+    }}
+    >
+      <Space
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        rowGap: '30px',
+        background: colorPrimaryBg,
+        padding: '10px',
+        borderRadius,
+      }}
+      >
+        <Space
+        style={{
+          display: 'flex',
+          columnGap: '20px'
+        }}
+        >
+          <Space
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+          >
+            <Text>
+              username:
+            </Text>
+            <Title level={4} style={{margin: 0}}>
+              {newUsernameAndPassword?.username}
+            </Title>
+          </Space>
+          
+          <Space
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+          >
+            <Text>
+              password:
+            </Text>
+            <Title level={4} style={{margin: 0}} copyable>
+              {newUsernameAndPassword?.password}
+            </Title>
+          </Space>
+        </Space>
+
+        <Button onClick={() => setShowPasswordModal(false)}>
+          CLOSE
+        </Button>
+      </Space>
+    </Modal>
+  )
+}
 
 export default function Users(props) {
   const {
@@ -20,7 +253,7 @@ export default function Users(props) {
   console.log('allUsers', allUsers)
 
   const {
-    // token: { colorBgContainer, colorPrimaryBg, borderRadius, colorError, colorInfo },
+    token: { colorBgContainer, colorPrimaryBg, borderRadius, colorError, colorInfo },
   } = theme.useToken();
 
   const tableData = []
@@ -45,12 +278,19 @@ export default function Users(props) {
   const updateUserLoading = useSelector(state => state.usersReducer.updateUserLoading)
   const updateUserFailed = useSelector(state => state.usersReducer.updateUserFailed)
 
+  const signupSuccessData = useSelector(state => state.usersReducer.signupSuccessData)
+  const signupLoading = useSelector(state => state.usersReducer.signupLoading)
+  const signupFailed = useSelector(state => state.usersReducer.signupFailed)
+
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const [form] = Form.useForm();
   const [data, setData] = useState(tableData);
   const [tempData, setTempData] = useState(null);
   const [editingKey, setEditingKey] = useState('');
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [newUsernameAndPassword, setNewUsernameAndPassword] = useState(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   const searchInput = useRef(null);
   const [messageApi, contextHolder] = message.useMessage();
@@ -205,19 +445,38 @@ export default function Users(props) {
       render: (_, record) => {
         const editable = isEditing(record);
         return editable ? (
-          <span>
-            <Typography.Link
-              onClick={() => save(record.key)}
-              style={{
-                marginRight: 8,
-              }}
+          <Space
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}
+          > 
+            <span>
+              <Typography.Link
+                onClick={() => save(record.key)}
+                style={{
+                  marginRight: 8,
+                }}
+              >
+                Save
+              </Typography.Link>
+              <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
+                <a>Cancel</a>
+              </Popconfirm>
+            </span>
+
+            <Button
+            type='dashed'
+            onClick={() => edit(record)}
+            style={{
+              color: colorError,
+              borderColor: colorError
+            }}
             >
-              Save
-            </Typography.Link>
-            <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
-              <a>Cancel</a>
-            </Popconfirm>
-          </span>
+              Reset
+            </Button>
+          </Space>
         ) : (
           <Typography.Link disabled={editingKey !== ''} onClick={() => edit(record)}>
             Edit
@@ -248,6 +507,7 @@ export default function Users(props) {
   const save = async (key) => {
     try {
       const row = await form.validateFields();
+      console.log('row', row)
       row.name = row.name.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase())
       const newData = [...data];
       const index = newData.findIndex((item) => key === item.key);
@@ -396,6 +656,10 @@ export default function Users(props) {
         cell: EditableCell,
       },
     },
+    scroll: {
+      x: 800,
+      // y: 300,
+    }
   };
 
   useEffect(() => {
@@ -422,6 +686,38 @@ export default function Users(props) {
       });
       dispatch(updateUserReset())
     }
+
+    if (signupSuccessData && !signupLoading && !signupFailed) {
+      console.log('signupSuccessData', signupSuccessData)
+      const newUser = {
+        key: data.length,
+        name: signupSuccessData.data.name,
+        username: signupSuccessData.data.username,
+        email: signupSuccessData.data.email ? signupSuccessData.data.email : '',
+        role: signupSuccessData.data.role,
+        active: signupSuccessData.data.isActive ? 'Yes' : 'No',
+        userId: signupSuccessData.data._id
+      }
+      setData([newUser, ...data])
+      
+      messageApi.open({
+        type: 'success',
+        content: 'Added new user!',
+      });
+
+      setShowAddUserModal(false)
+      setShowPasswordModal(true)
+      dispatch(signUpReset())
+    }
+
+    if (signupFailed) {
+      console.log('signupFailed', signupFailed)
+      messageApi.open({
+        type: 'error',
+        content: signupFailed.data.message ? signupFailed.data.message : 'Adding new user failed!',
+      });
+      dispatch(signUpReset())
+    }
   }, [
     dispatch,
     updateUserSuccess,
@@ -430,12 +726,69 @@ export default function Users(props) {
     allUsers,
     messageApi,
     tempData,
+    signupSuccessData,
+    signupLoading,
+    signupFailed,
+    data
   ])
+
+  const addUser = (value) => {
+    let password = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    let counter = 0;
+    while (counter < 6) {
+      password += characters.charAt(Math.floor(Math.random() * charactersLength));
+      counter += 1;
+    }
+    
+    const newUserData = {
+      username: value.username,
+      name: value.name.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase()),
+      password,
+      email: value.email ? value.email : null,
+      role: value.role.toLowerCase(),
+    }
+
+    console.log('password', password)
+    setNewUsernameAndPassword({
+      username: newUserData.username,
+      password,
+    })
+
+    dispatch(signUp(newUserData))
+  }
 
   return (
     <UsersStyled>
       {contextHolder}
-      <Title level={3} style={{margin: '0 0 20px 0'}}>USERS</Title>
+      <Space
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      }}
+      >
+        <Title level={3} style={{margin: '0'}}>USERS</Title>
+
+        <Button type='primary' onClick={() => setShowAddUserModal(true)}><PlusOutlined />Add User</Button>
+        <AddUserModal
+        showAddUserModal={showAddUserModal}
+        setShowAddUserModal={setShowAddUserModal}
+        colorPrimaryBg={colorPrimaryBg}
+        borderRadius={borderRadius}
+        addUser={addUser}
+        signupLoading={signupLoading}
+        />
+        <PasswordModal
+        showPasswordModal={showPasswordModal}
+        setShowPasswordModal={() => setShowPasswordModal()}
+        newUsernameAndPassword={newUsernameAndPassword}
+        colorPrimaryBg={colorPrimaryBg}
+        borderRadius={borderRadius}
+        />
+      </Space>
+      
       <Form form={form} component={false}>
         <Table
           {...tableProps}

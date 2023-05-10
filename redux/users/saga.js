@@ -16,14 +16,11 @@ export function* signUp() {
             });
 
             const usersInputData = {
-                mobile: +payload.mobile,
+                name: payload.name,
+                username: payload.username,
                 email: payload.email,
                 password: payload.password,
-                firstName: payload.firstName,
-                lastName: payload.lastName,
-                birthday: payload.birthday,
-                address: payload.address,
-                verifiedPhone: true,
+                role: payload.role
             }
             
             const apiResult = yield signupRequest(usersInputData);
