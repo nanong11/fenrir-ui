@@ -130,7 +130,7 @@ export default function Dashboard() {
         break;
 
       case 'USERS':
-        setSelectedMenu(<Users allUsers={allUsers} />)
+        setSelectedMenu(<Users allUsers={allUsers} allUsersLoading={allUsersLoading} />)
         break;
 
       default:

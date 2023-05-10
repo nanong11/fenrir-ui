@@ -70,6 +70,7 @@ const AddUserModal = (props) => {
           placeholder='username'
           disabled={signupLoading}
           loading={signupLoading}
+          maxLength={30}
           />
         </Form.Item>
 
@@ -96,6 +97,7 @@ const AddUserModal = (props) => {
           placeholder='Name'
           disabled={signupLoading}
           loading={signupLoading}
+          maxLength={30}
           />
         </Form.Item>
           
@@ -175,22 +177,29 @@ const PasswordModal = (props) => {
     showPasswordModal,
     setShowPasswordModal,
     newUsernameAndPassword,
+    setNewUsernameAndPassword,
     colorPrimaryBg,
     borderRadius,
+    resetPassword,
+    setResetPassword,
   } = props
 
   console.log('newUsernameAndPassword', newUsernameAndPassword)
+  const handleClose = () => {
+    setShowPasswordModal(false)
+    setResetPassword(false)
+    setNewUsernameAndPassword(null)
+  }
   return (
     <Modal
-    title='ADDED NEW USER'
+    title={resetPassword ? 'RESET PASSWORD' : 'ADDED NEW USER'}
     open={showPasswordModal} 
     footer={null} 
     closable={false}
     destroyOnClose
-    width='300px'
     style={{
       textAlign: 'center',
-      // background: 'red'
+      minWidth: '300px',
     }}
     >
       <Space
@@ -206,7 +215,7 @@ const PasswordModal = (props) => {
         <Space
         style={{
           display: 'flex',
-          columnGap: '20px'
+          columnGap: '10px',
         }}
         >
           <Space
@@ -218,7 +227,7 @@ const PasswordModal = (props) => {
             <Text>
               username:
             </Text>
-            <Title level={4} style={{margin: 0}}>
+            <Title level={4} style={{margin: 0}} copyable>
               {newUsernameAndPassword?.username}
             </Title>
           </Space>
@@ -238,7 +247,7 @@ const PasswordModal = (props) => {
           </Space>
         </Space>
 
-        <Button onClick={() => setShowPasswordModal(false)}>
+        <Button onClick={handleClose}>
           CLOSE
         </Button>
       </Space>
@@ -248,7 +257,8 @@ const PasswordModal = (props) => {
 
 export default function Users(props) {
   const {
-    allUsers
+    allUsers,
+    allUsersLoading
   } = props
   console.log('allUsers', allUsers)
 
@@ -291,6 +301,7 @@ export default function Users(props) {
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [newUsernameAndPassword, setNewUsernameAndPassword] = useState(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [resetPassword, setResetPassword] = useState(false);
 
   const searchInput = useRef(null);
   const [messageApi, contextHolder] = message.useMessage();
@@ -465,17 +476,18 @@ export default function Users(props) {
                 <a>Cancel</a>
               </Popconfirm>
             </span>
-
-            <Button
-            type='dashed'
-            onClick={() => edit(record)}
-            style={{
-              color: colorError,
-              borderColor: colorError
-            }}
-            >
-              Reset
-            </Button>
+            
+            <Popconfirm title="Sure to reset password?" onConfirm={() => handleResetPassword(record)}>
+              <Button
+              type='dashed'
+              style={{
+                color: colorError,
+                borderColor: colorError
+              }}
+              >
+                Reset
+              </Button>
+            </Popconfirm>
           </Space>
         ) : (
           <Typography.Link disabled={editingKey !== ''} onClick={() => edit(record)}>
@@ -645,7 +657,7 @@ export default function Users(props) {
 
   const tableProps = {
     // bordered: true,
-    loading: updateUserLoading,
+    loading: updateUserLoading || signupLoading || allUsersLoading,
     size: 'middle',
     expandable: {
       expandedRowRender: (record) => <p>{record.name}</p>,
@@ -664,18 +676,27 @@ export default function Users(props) {
 
   useEffect(() => {
     if (updateUserSuccess && !updateUserLoading && !updateUserFailed && allUsers && allUsers.data.length > 0) {
-      allUsers.data.forEach((element, index) => {
-        if (element._id === updateUserSuccess.data._id) {
-          allUsers.data[index] = updateUserSuccess.data
-        }
-      });
-      setData(tempData)
+      if (resetPassword) {
+        setShowPasswordModal(true)
+        messageApi.open({
+          type: 'success',
+          content: 'User password updated!',
+        });
+      } else {
+        allUsers.data.forEach((element, index) => {
+          if (element._id === updateUserSuccess.data._id) {
+            allUsers.data[index] = updateUserSuccess.data
+          }
+        });
+        setData(tempData)
+        messageApi.open({
+          type: 'success',
+          content: 'User details updated!',
+        });
+      }
+
       setEditingKey('');
       dispatch(updateUserReset())
-      messageApi.open({
-        type: 'success',
-        content: 'User details updated!',
-      });
     }
 
     if (updateUserFailed) {
@@ -688,7 +709,6 @@ export default function Users(props) {
     }
 
     if (signupSuccessData && !signupLoading && !signupFailed) {
-      console.log('signupSuccessData', signupSuccessData)
       const newUser = {
         key: data.length,
         name: signupSuccessData.data.name,
@@ -729,7 +749,8 @@ export default function Users(props) {
     signupSuccessData,
     signupLoading,
     signupFailed,
-    data
+    data,
+    resetPassword,
   ])
 
   const addUser = (value) => {
@@ -759,6 +780,31 @@ export default function Users(props) {
     dispatch(signUp(newUserData))
   }
 
+  const handleResetPassword = (value) => {
+    let password = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    let counter = 0;
+    while (counter < 6) {
+      password += characters.charAt(Math.floor(Math.random() * charactersLength));
+      counter += 1;
+    }
+    const updatedUserData = {
+      userId: value.userId,
+      body: {
+        password
+      }
+    }
+
+    dispatch(updateUser(updatedUserData))
+
+    setNewUsernameAndPassword({
+      username: value.username,
+      password
+    })
+    setResetPassword(true)
+  }
+
   return (
     <UsersStyled>
       {contextHolder}
@@ -767,6 +813,7 @@ export default function Users(props) {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
+        margin: '0 0 16px 0'
       }}
       >
         <Title level={3} style={{margin: '0'}}>USERS</Title>
@@ -784,8 +831,11 @@ export default function Users(props) {
         showPasswordModal={showPasswordModal}
         setShowPasswordModal={() => setShowPasswordModal()}
         newUsernameAndPassword={newUsernameAndPassword}
+        setNewUsernameAndPassword={setNewUsernameAndPassword}
         colorPrimaryBg={colorPrimaryBg}
         borderRadius={borderRadius}
+        resetPassword={resetPassword}
+        setResetPassword={setResetPassword}
         />
       </Space>
       
