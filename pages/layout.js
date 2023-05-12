@@ -10,12 +10,17 @@ import { useDispatch, useSelector } from 'react-redux'
 import authActions from '@/redux/auth/actions'
 import utilityActions from '@/redux/utility/actions'
 import { io } from 'socket.io-client';
+import usersAction from '@/redux/users/actions'
 
 const socket = io.connect(process.env.NEXT_PUBLIC_API_SOCKETURL)
 
 const { 
   authenticate,
 } = authActions;
+
+const {
+  fetchAllUsers,
+} = usersAction
 
 const {
   setView,
@@ -62,6 +67,9 @@ export default function Layout({ children }) {
   const authenticateLoading = useSelector(state => state.authReducer.authenticateLoading)
   const authenticateFailed = useSelector(state => state.authReducer.authenticateFailed)
   const socketIo = useSelector(state => state.utilityReducer.socketIo)
+  const allUsers = useSelector(state => state.usersReducer.allUsers)
+  const allUsersLoading = useSelector(state => state.usersReducer.allUsersLoading)
+  const allUsersFailed = useSelector(state => state.usersReducer.allUsersFailed)
 
   const [loading, setLoading] = useState(true)
   const [isOnline, setIsOnline] = useState(false)
@@ -124,14 +132,27 @@ export default function Layout({ children }) {
     if (!isOnline && userId) {
       socket.emit('online', userId)
       setIsOnline(true)
+      dispatch(authenticate())
     }
 
-    const currentOnlineUsers = (currentOnlineUsers) => {
-      console.log('currentOnline', currentOnlineUsers)
-      dispatch(setCurrentOnlineUsers(currentOnlineUsers))
+    if (usersData?.data?.role === 'admin' && !allUsers && !allUsersLoading && !allUsersFailed) {
+      dispatch(fetchAllUsers())
     }
 
-    socket.on('current_online_users', currentOnlineUsers)
+    const incommingUser = (incommingUser) => {
+      // console.log('currentOnline', currentOnlineUsers)
+      // dispatch(setCurrentOnlineUsers(currentOnlineUsers))
+
+      if (usersData?.data?.role === 'admin' && incommingUser) {
+        console.log('incommingUser', incommingUser)
+        const index = allUsers?.data?.findIndex((item) => incommingUser._id === item._id )
+        if (index > -1) {
+          allUsers?.data?.splice(index, 1, incommingUser)
+        }
+      }
+    }
+
+    socket.on('incomming_user', incommingUser)
 
     return () => socket.off();
   }, [
@@ -147,6 +168,9 @@ export default function Layout({ children }) {
     authenticateFailed,
     socketIo,
     isOnline,
+    allUsers,
+    allUsersLoading,
+    allUsersFailed
   ])
 
   return (

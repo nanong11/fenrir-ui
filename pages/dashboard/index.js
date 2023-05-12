@@ -30,9 +30,10 @@ export default function Dashboard() {
   // const view = useSelector(state => state.utilityReducer.view)
   const usersData = useSelector(state => state.authReducer.usersData)
   const role = usersData?.data?.role
-  const allUsers = useSelector(state => state.usersReducer.allUsers)
-  const allUsersLoading = useSelector(state => state.usersReducer.allUsersLoading)
-  const allUsersFailed = useSelector(state => state.usersReducer.allUsersFailed)
+  // const allUsers = useSelector(state => state.usersReducer.allUsers)
+  // console.log('allUsers', allUsers)
+  // const allUsersLoading = useSelector(state => state.usersReducer.allUsersLoading)
+  // const allUsersFailed = useSelector(state => state.usersReducer.allUsersFailed)
 
   const [collapse, setCollapse] = useState(true)
   const [broken, setBroken] = useState(null)
@@ -40,16 +41,16 @@ export default function Dashboard() {
   const [hideContent, setHideContent] = useState(false)
 
   useEffect(() => {
-    if (role === 'admin' && !allUsers && !allUsersLoading && !allUsersFailed) {
-      dispatch(fetchAllUsers())
-    }
+    // if (role === 'admin' && !allUsers && !allUsersLoading && !allUsersFailed) {
+    //   dispatch(fetchAllUsers())
+    // }
   
   }, [
-    dispatch,
-    role,
-    allUsers,
-    allUsersLoading,
-    allUsersFailed,
+    // dispatch,
+    // role,
+    // allUsers,
+    // allUsersLoading,
+    // allUsersFailed,
   ])
   
   const sideMenuItems = [
@@ -64,11 +65,11 @@ export default function Dashboard() {
       label: `CHANNELS`,
       allowed: 'user',
       children: [
-        {
-          key: 'Add Channel',
-          label: 'Add Channel',
-          allowed: 'admin'
-        },
+        // {
+        //   key: 'Add Channel',
+        //   label: 'Add Channel',
+        //   allowed: 'admin'
+        // },
         {
           key: 'Attendance',
           label: 'Attendance',
