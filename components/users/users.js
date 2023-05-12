@@ -185,7 +185,6 @@ const PasswordModal = (props) => {
     setResetPassword,
   } = props
 
-  console.log('newUsernameAndPassword', newUsernameAndPassword)
   const handleClose = () => {
     setShowPasswordModal(false)
     setResetPassword(false)
@@ -417,9 +416,22 @@ export default function Users() {
 
   const columns = [
     {
+      title: 'Status',
       dataIndex: 'status',
       editable: false,
-      width: 80,
+      width: 100,
+      filters: [
+        {
+          text: 'Online',
+          value: 'online',
+        },
+        {
+          text: 'Offline',
+          value: 'offline',
+        },
+      ],
+      onFilter: (value, record) => record.status.indexOf(value) === 0,
+      sorter: (a, b) => a.status.localeCompare(b.status),
     },
     {
       title: 'Name',
@@ -673,7 +685,7 @@ export default function Users() {
       },
     },
     scroll: {
-      x: 800,
+      x: 1000,
       // y: 300,
     }
   };
