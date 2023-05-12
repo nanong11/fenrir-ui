@@ -6,6 +6,7 @@ const initialState = {
     scrollbarUseRef: null,
     mobile: null,
     socketIo: null,
+    currentOnlineUsers: null,
 }
 
 // Define reducer function
@@ -30,6 +31,11 @@ export default function utilityReducer(state = initialState, action) {
             return {
                 ...state,
                 socketIo: action.payload,
+            }
+        case actions.SET_CURRENT_ONLINE_USERS_SUCCESS:
+            return {
+                ...state,
+                currentOnlineUsers: action.payload,
             }
 
         default:

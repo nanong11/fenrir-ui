@@ -9,6 +9,9 @@ import LoadingPage from '@/pages/loadingPage'
 import { useDispatch, useSelector } from 'react-redux'
 import authActions from '@/redux/auth/actions'
 import utilityActions from '@/redux/utility/actions'
+import { io } from 'socket.io-client';
+
+const socket = io.connect(process.env.NEXT_PUBLIC_API_SOCKETURL)
 
 const { 
   authenticate,
@@ -17,6 +20,8 @@ const {
 const {
   setView,
   setScrollbarUseRef,
+  setSocketIo,
+  setCurrentOnlineUsers,
 } = utilityActions;
 
 const arrayPath = [
@@ -56,8 +61,10 @@ export default function Layout({ children }) {
   const logoutLoading = useSelector(state => state.authReducer.logoutLoading)
   const authenticateLoading = useSelector(state => state.authReducer.authenticateLoading)
   const authenticateFailed = useSelector(state => state.authReducer.authenticateFailed)
+  const socketIo = useSelector(state => state.utilityReducer.socketIo)
 
   const [loading, setLoading] = useState(true)
+  const [isOnline, setIsOnline] = useState(false)
 
   const scrollbar = useRef(null)
 
@@ -108,8 +115,28 @@ export default function Layout({ children }) {
     if (scrollbar && !scrollbarUseRef) {
       dispatch(setScrollbarUseRef(scrollbar))
     }
+
+    // FOR HANDLING SOCKET IO
+    if (!socketIo) {
+      dispatch(setSocketIo(socket))
+    }
+    
+    if (!isOnline && userId) {
+      socket.emit('online', userId)
+      setIsOnline(true)
+    }
+
+    const currentOnlineUsers = (currentOnlineUsers) => {
+      console.log('currentOnline', currentOnlineUsers)
+      dispatch(setCurrentOnlineUsers(currentOnlineUsers))
+    }
+
+    socket.on('current_online_users', currentOnlineUsers)
+
+    return () => socket.off();
   }, [
     dispatch,
+    userId,
     windowSize,
     loading,
     router,
@@ -117,8 +144,9 @@ export default function Layout({ children }) {
     logoutLoading,
     authenticateLoading,
     usersData,
-    userId,
     authenticateFailed,
+    socketIo,
+    isOnline,
   ])
 
   return (

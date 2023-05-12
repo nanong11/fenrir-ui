@@ -11,6 +11,7 @@ const {
   updateUserReset,
   signUp,
   signUpReset,
+  fetchAllUsers,
 } = usersActions
 
 const { Title, Text } = Typography
@@ -255,16 +256,15 @@ const PasswordModal = (props) => {
   )
 }
 
-export default function Users(props) {
-  const {
-    allUsers,
-    allUsersLoading
-  } = props
-  console.log('allUsers', allUsers)
-
+export default function Users() {
   const {
     token: { colorBgContainer, colorPrimaryBg, borderRadius, colorError, colorInfo },
   } = theme.useToken();
+
+  const dispatch = useDispatch()
+
+  const allUsers = useSelector(state => state.usersReducer.allUsers)
+  const allUsersLoading = useSelector(state => state.usersReducer.allUsersLoading)
 
   const tableData = []
   if (allUsers && allUsers.data.length > 0) {
@@ -278,11 +278,10 @@ export default function Users(props) {
         email: user.email ? user.email : '',
         role: user.role.charAt(0).toUpperCase() + user.role.slice(1),
         active: user.isActive ? 'Yes' : 'No',
+        status: user.isOnline ? 'online' : 'offline'
       })
     }
   }
-
-  const dispatch = useDispatch()
 
   const updateUserSuccess = useSelector(state => state.usersReducer.updateUserSuccess)
   const updateUserLoading = useSelector(state => state.usersReducer.updateUserLoading)
@@ -417,6 +416,11 @@ export default function Users(props) {
   });
 
   const columns = [
+    {
+      dataIndex: 'status',
+      editable: false,
+      width: 80,
+    },
     {
       title: 'Name',
       dataIndex: 'name',
@@ -805,6 +809,11 @@ export default function Users(props) {
     setResetPassword(true)
   }
 
+  const handleUserTableReload = () => {
+    dispatch(fetchAllUsers())
+    setData([...tableData])
+  }
+
   return (
     <UsersStyled>
       {contextHolder}
@@ -838,6 +847,7 @@ export default function Users(props) {
         setResetPassword={setResetPassword}
         />
       </Space>
+      <Button type='dashed' onClick={handleUserTableReload}>Reload</Button>
       
       <Form form={form} component={false}>
         <Table

@@ -61,11 +61,28 @@ export function* setSocketIo() {
     });
 }
 
+export function* setCurrentOnlineUsers() {
+    yield takeEvery('SET_CURRENT_ONLINE_USERS', function* ({payload}) {
+        if (payload) {
+            yield put({
+                type: actions.SET_CURRENT_ONLINE_USERS_SUCCESS,
+                payload
+            });
+        } else {
+            yield put({
+                type: actions.SET_CURRENT_ONLINE_USERS_SUCCESS,
+                payload: null
+            });
+        }
+    });
+}
+
 export default function* rootSaga() {
     yield all([
       fork(setView),
       fork(setScrollbarUseRef),
       fork(setMobileAction),
       fork(setSocketIo),
+      fork(setCurrentOnlineUsers),
     ])
 }
