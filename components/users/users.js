@@ -658,7 +658,7 @@ export default function Users(props) {
   const tableProps = {
     // bordered: true,
     loading: updateUserLoading || signupLoading || allUsersLoading,
-    size: 'middle',
+    size: 'large',
     expandable: {
       expandedRowRender: (record) => <p>{record.name}</p>,
     },
