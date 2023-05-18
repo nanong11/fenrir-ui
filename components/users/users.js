@@ -70,7 +70,6 @@ const AddUserModal = (props) => {
           <Input
           placeholder='username'
           disabled={signupLoading}
-          loading={signupLoading}
           maxLength={30}
           />
         </Form.Item>
@@ -97,7 +96,6 @@ const AddUserModal = (props) => {
           <Input
           placeholder='Name'
           disabled={signupLoading}
-          loading={signupLoading}
           maxLength={30}
           />
         </Form.Item>
@@ -124,7 +122,6 @@ const AddUserModal = (props) => {
           <Input
           placeholder='Email'
           disabled={signupLoading}
-          loading={signupLoading}
           />
         </Form.Item>
         
@@ -145,7 +142,6 @@ const AddUserModal = (props) => {
             { value: 'Admin', label: 'Admin' },
           ]}
           disabled={signupLoading}
-          loading={signupLoading}
           />
         </Form.Item>
         
@@ -732,7 +728,8 @@ export default function Users() {
         email: signupSuccessData.data.email ? signupSuccessData.data.email : '',
         role: signupSuccessData.data.role,
         active: signupSuccessData.data.isActive ? 'Yes' : 'No',
-        userId: signupSuccessData.data._id
+        userId: signupSuccessData.data._id,
+        status: 'offline',
       }
       setData([newUser, ...data])
       
@@ -743,6 +740,7 @@ export default function Users() {
 
       setShowAddUserModal(false)
       setShowPasswordModal(true)
+      dispatch(fetchAllUsers())
       dispatch(signUpReset())
     }
 

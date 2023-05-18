@@ -41,7 +41,7 @@ export default function Channels(props) {
   const createConversationLoading = useSelector(state => state.conversationReducer.createConversationLoading)
   const createConversationFailed = useSelector(state => state.conversationReducer.createConversationFailed)
   const allUsers = useSelector(state => state.usersReducer.allUsers)
-  console.log('allUsers', allUsers.data)
+  console.log('allUsers', allUsers)
 
   const addParticipantsData = useSelector(state => state.conversationReducer.addParticipantsData)
   console.log('addParticipantsData', addParticipantsData)
