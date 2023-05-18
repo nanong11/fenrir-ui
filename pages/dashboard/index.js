@@ -9,6 +9,7 @@ import authActions from '@/redux/auth/actions'
 import { useDispatch, useSelector } from 'react-redux';
 import usersAction from '@/redux/users/actions'
 import Users from '@/components/users/users';
+import Channels from '@/components/channels/channels';
 
 const {
   logout,
@@ -34,11 +35,25 @@ export default function Dashboard() {
   // console.log('allUsers', allUsers)
   // const allUsersLoading = useSelector(state => state.usersReducer.allUsersLoading)
   // const allUsersFailed = useSelector(state => state.usersReducer.allUsersFailed)
+  const conversationArray = useSelector(state => state.utilityReducer.conversationArray)
 
   const [collapse, setCollapse] = useState(true)
   const [broken, setBroken] = useState(null)
   const [selectedMenu, setSelectedMenu] = useState(<Profile usersData={usersData} />)
   const [hideContent, setHideContent] = useState(false)
+
+  conversationArray?.sort((conversA, conversB) => {
+    const lastMessageA = conversA.messages[conversA.messages.length - 1]
+    const lastMessageB = conversB.messages[conversB.messages.length - 1]
+
+    const lastMessageACreatedAt = moment.tz(lastMessageA?.createdAt, "Asia/Taipei").format()
+    const lastMessageBCreatedAt = moment.tz(lastMessageB?.createdAt, "Asia/Taipei").format()
+
+    const lastMessageACreatedAtInMilliseconds = Date.parse(lastMessageACreatedAt)
+    const lastMessageBCreatedAtMilliseconds = Date.parse(lastMessageBCreatedAt)
+
+    return lastMessageBCreatedAtMilliseconds - lastMessageACreatedAtInMilliseconds
+  })
 
   useEffect(() => {
     // if (role === 'admin' && !allUsers && !allUsersLoading && !allUsersFailed) {
@@ -61,31 +76,14 @@ export default function Dashboard() {
       allowed: 'user'
     },
     {
+      key: 'CHANNELS',
       icon: <GroupOutlined />,
       label: `CHANNELS`,
       allowed: 'user',
-      children: [
-        // {
-        //   key: 'Add Channel',
-        //   label: 'Add Channel',
-        //   allowed: 'admin'
-        // },
-        {
-          key: 'Attendance',
-          label: 'Attendance',
-          allowed: 'user'
-        },
-      ].map((item) => {
-        if (role === 'admin') {
-          return {
-            key: item.key,
-            label: item.label
-          }
-        } else if (role === item.allowed) {
-          return {
-            key: item.key,
-            label: item.label
-          }
+      children: conversationArray.map((conversation) => {
+        return {
+          key: conversation.name,
+          label: conversation.name,
         }
       })
     },
@@ -122,16 +120,21 @@ export default function Dashboard() {
   })
 
   const handleMenuItemOnClick = (value) => {
+    console.log('MENU_VALUE', value)
     setCollapse(!collapse)
     setHideContent(false)
 
-    switch (value.key) {
+    switch (value.keyPath[value.keyPath.length - 1]) {
       case 'PROFILE':
         setSelectedMenu(<Profile usersData={usersData} />)
         break;
 
       case 'USERS':
         setSelectedMenu(<Users />)
+        break;
+
+      case 'CHANNELS':
+        setSelectedMenu(<Channels channelname={value.key} />)
         break;
 
       default:
@@ -155,9 +158,9 @@ export default function Dashboard() {
         <Sider
         trigger={null}
         collapsible
-        breakpoint="sm"
+        breakpoint="md"
         collapsedWidth={broken && collapse ? '0' : '80px'}
-        width={broken ? '85vw' : '200px'}
+        width={broken ? '100vw' : '200px'}
         collapsed={broken ? collapse : false}
         onBreakpoint={(broken) => {
           setBroken(broken)
@@ -175,7 +178,7 @@ export default function Dashboard() {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'space-between',
-            width: broken ? '85vw' : '200px',
+            width: broken ? '100vw' : '200px',
             height: '100%',
           }}
           >
@@ -219,58 +222,63 @@ export default function Dashboard() {
             </Space>
           </Space>
         </Sider>
-
+              
         <Layout>
-          <Header
-            style={{
-              padding: '0 10px 0 0',
-              background: colorBgContainer,
-              display: 'flex',
-              justifyContent: broken ? 'space-between' : 'flex-end',
-              columnGap: '20px'
-            }}
-          >
-            {
-              broken ?
-              <Button
-              type="text"
-              icon={collapse ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-              onClick={handleMenuBtnOnClick}
+          {
+            hideContent ? null :
+            <Header
               style={{
-                fontSize: '1.5rem',
-                width: 64,
-                height: '100%',
+                padding: '0 10px 0 0',
                 background: colorBgContainer,
-                color: colorPrimary
+                display: 'flex',
+                justifyContent: broken ? 'space-between' : 'flex-end',
+                columnGap: '20px'
               }}
-              /> : null
-            }
+            >
+              {
+                broken ?
+                <Button
+                type="text"
+                icon={collapse ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                onClick={handleMenuBtnOnClick}
+                style={{
+                  fontSize: '1.5rem',
+                  width: 64,
+                  height: '100%',
+                  background: colorBgContainer,
+                  color: colorPrimary
+                }}
+                /> : null
+              }
 
-            <Space align='center'>
-              <Avatar
-                icon={<AntDesignOutlined />}
-              />
-            </Space>
-          </Header>
+              <Space align='center'>
+                <Avatar
+                  icon={<AntDesignOutlined />}
+                />
+              </Space>
+            </Header>
+          }
           
-          <Content
-            style={{
-              margin: '10px',
-            }}
-          > 
-            {
-              hideContent ? null :
+          
+          {
+            hideContent ? null :
+            <Content
+              style={{
+                margin: '10px',
+              }}
+            > 
               <div
               style={{
-                padding: 24,
+                // padding: 16,
                 minHeight: '100%',
                 background: colorBgContainer,
               }}
               >
                 {selectedMenu}
               </div>
-            }
-          </Content>
+            </Content>
+          }
+          
         </Layout>
       </Layout>
     </DashboardStyled>

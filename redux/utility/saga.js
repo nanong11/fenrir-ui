@@ -77,6 +77,22 @@ export function* setCurrentOnlineUsers() {
     });
 }
 
+export function* setConversationArray() {
+    yield takeEvery('SET_CONVERSATION_ARRAY', function* ({payload}) {
+        if (payload) {
+            yield put({
+                type: actions.SET_CONVERSATION_ARRAY_SUCCESS,
+                payload
+            });
+        } else {
+            yield put({
+                type: actions.SET_CONVERSATION_ARRAY_SUCCESS,
+                payload: null
+            });
+        }
+    });
+}
+
 export default function* rootSaga() {
     yield all([
       fork(setView),
@@ -84,5 +100,6 @@ export default function* rootSaga() {
       fork(setMobileAction),
       fork(setSocketIo),
       fork(setCurrentOnlineUsers),
+      fork(setConversationArray),
     ])
 }

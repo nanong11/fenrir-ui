@@ -7,6 +7,7 @@ const initialState = {
     mobile: null,
     socketIo: null,
     currentOnlineUsers: null,
+    conversationArray: [],
 }
 
 // Define reducer function
@@ -36,6 +37,11 @@ export default function utilityReducer(state = initialState, action) {
             return {
                 ...state,
                 currentOnlineUsers: action.payload,
+            }
+        case actions.SET_CONVERSATION_ARRAY_SUCCESS:
+            return {
+                ...state,
+                conversationArray: action.payload,
             }
 
         default:

@@ -11,6 +11,7 @@ import authActions from '@/redux/auth/actions'
 import utilityActions from '@/redux/utility/actions'
 import { io } from 'socket.io-client';
 import usersAction from '@/redux/users/actions'
+import conversationAction from '@/redux/conversation/actions'
 
 const socket = io.connect(process.env.NEXT_PUBLIC_API_SOCKETURL)
 
@@ -23,10 +24,15 @@ const {
 } = usersAction
 
 const {
+  fetchConversationByUserId,
+} = conversationAction
+
+const {
   setView,
   setScrollbarUseRef,
   setSocketIo,
   setCurrentOnlineUsers,
+  setConversationArray,
 } = utilityActions;
 
 const arrayPath = [
@@ -71,8 +77,13 @@ export default function Layout({ children }) {
   const allUsersLoading = useSelector(state => state.usersReducer.allUsersLoading)
   const allUsersFailed = useSelector(state => state.usersReducer.allUsersFailed)
 
+  const fectchConversationByUserIdData = useSelector(state => state.conversationReducer.fectchConversationByUserIdData)
+  const fectchConversationByUserIdLoading = useSelector(state => state.conversationReducer.fectchConversationByUserIdLoading)
+  const fectchConversationByUserIdFailed = useSelector(state => state.conversationReducer.fectchConversationByUserIdFailed)
+
   const [loading, setLoading] = useState(true)
   const [isOnline, setIsOnline] = useState(false)
+  const [socketJoined, setSocketJoined] = useState(false)
 
   const scrollbar = useRef(null)
 
@@ -124,6 +135,16 @@ export default function Layout({ children }) {
       dispatch(setScrollbarUseRef(scrollbar))
     }
 
+    // FOR FETCHING ALL USERS
+    if (usersData?.data?.role === 'admin' && !allUsers && !allUsersLoading && !allUsersFailed) {
+      dispatch(fetchAllUsers())
+    }
+
+    // FOR CONVERSATION
+    if (userId && !fectchConversationByUserIdData && !fectchConversationByUserIdLoading && !fectchConversationByUserIdFailed) {
+      dispatch(fetchConversationByUserId({userId}))
+    }
+
     // FOR HANDLING SOCKET IO
     if (!socketIo) {
       dispatch(setSocketIo(socket))
@@ -135,8 +156,33 @@ export default function Layout({ children }) {
       dispatch(authenticate())
     }
 
-    if (usersData?.data?.role === 'admin' && !allUsers && !allUsersLoading && !allUsersFailed) {
-      dispatch(fetchAllUsers())
+    if (!socketJoined && fectchConversationByUserIdData && fectchConversationByUserIdData.data.length > 0) {
+      // socket.emit('personal_room', userId)
+      fectchConversationByUserIdData.data.map(conversation => socket.emit('join_conversation', conversation))
+      
+      // fectchConversationByUserIdData.data.map(conversation => {
+      //   const sentMessageArray = conversation.messages.filter(message => {
+      //     if (message.status === 'sent' && message.userId !== userId) {
+      //       return message
+      //     }
+      //   })
+
+      //   if (sentMessageArray.length > 0) {
+      //     sentMessageArray.map(message =>{
+      //       dispatch(updateMessage({
+      //         messageId: message._id,
+      //         body: {
+      //           status: 'received'
+      //         }
+      //       }))
+      //       message.status = 'received'
+      //       socket.emit('received_message', message);
+      //     })
+      //   }
+      // })
+      
+      dispatch(setConversationArray(fectchConversationByUserIdData.data))
+      setSocketJoined(true)
     }
 
     const incommingUser = (incommingUser) => {
@@ -170,7 +216,10 @@ export default function Layout({ children }) {
     isOnline,
     allUsers,
     allUsersLoading,
-    allUsersFailed
+    allUsersFailed,
+    fectchConversationByUserIdData,
+    fectchConversationByUserIdLoading,
+    fectchConversationByUserIdFailed,
   ])
 
   return (

@@ -15,6 +15,9 @@ const actions = {
     SET_CURRENT_ONLINE_USERS: "SET_CURRENT_ONLINE_USERS",
     SET_CURRENT_ONLINE_USERS_SUCCESS: "SET_CURRENT_ONLINE_USERS_SUCCESS",
 
+    SET_CONVERSATION_ARRAY: "SET_CONVERSATION_ARRAY",
+    SET_CONVERSATION_ARRAY_SUCCESS: "SET_CONVERSATION_ARRAY_SUCCESS",
+
     // * Declare the actions function *
     setView: (payload) => ({
         type: actions.SET_VIEW,
@@ -38,6 +41,11 @@ const actions = {
 
     setCurrentOnlineUsers: (payload) => ({
         type: actions.SET_CURRENT_ONLINE_USERS,
+        payload
+    }),
+
+    setConversationArray: (payload) => ({
+        type: actions.SET_CONVERSATION_ARRAY,
         payload
     }),
  }
