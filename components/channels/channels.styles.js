@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import * as pallete from '@/styles/variables';
+// import * as pallete from '@/styles/variables';
 
 const ChannelsStyled = styled.div`
 	min-width: 100%;

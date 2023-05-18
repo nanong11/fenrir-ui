@@ -12,6 +12,10 @@ const initialState = {
     allConversations: null,
     allConversationsLoading: false,
     allConversationsFailed: null,
+
+    addParticipantsData: null,
+    addParticipantsDataLoading: false,
+    addParticipantsDataFailed: null,
 }
 
 export default function conversationReducer(state = initialState, action) {
@@ -93,6 +97,32 @@ export default function conversationReducer(state = initialState, action) {
                 allConversations: null,
                 allConversationsLoading: false,
                 allConversationsFailed: null,
+            }
+        case actions.ADD_PARTICIPANTS_SUCCESS:
+            return {
+                ...state,
+                addParticipantsData: action.payload,
+                addParticipantsDataLoading: false,
+                addParticipantsDataFailed: null,
+            }
+        case actions.ADD_PARTICIPANTS_LOADING:
+            return {
+                ...state,
+                addParticipantsDataLoading: true,
+            }
+        case actions.ADD_PARTICIPANTS_FAILED:
+            return {
+                ...state,
+                addParticipantsData: null,
+                addParticipantsDataLoading: false,
+                addParticipantsDataFailed: action.payload,
+            }
+        case actions.ADD_PARTICIPANTS_RESET:
+            return {
+                ...state,
+                addParticipantsData: null,
+                addParticipantsDataLoading: false,
+                addParticipantsDataFailed: null,
             }
         
         default:

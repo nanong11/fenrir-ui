@@ -17,6 +17,12 @@ const actions = {
     FETCH_ALL_CONVERSTION_FAILED: "FETCH_ALL_CONVERSTION_FAILED",
     FETCH_ALL_CONVERSTION_RESET: "FETCH_ALL_CONVERSTION_RESET",
 
+    ADD_PARTICIPANTS: "ADD_PARTICIPANTS",
+    ADD_PARTICIPANTS_SUCCESS: "ADD_PARTICIPANTS_SUCCESS",
+    ADD_PARTICIPANTS_LOADING: "ADD_PARTICIPANTS_LOADING",
+    ADD_PARTICIPANTS_FAILED: "ADD_PARTICIPANTS_FAILED",
+    ADD_PARTICIPANTS_RESET: "ADD_PARTICIPANTS_RESET",
+
     fetchConversationByUserId: (payload) => ({
         type: actions.FETCH_CONVERSATION_BY_USERID,
         payload
@@ -36,6 +42,13 @@ const actions = {
     }),
     fetchAllConversationReset: () => ({
         type: actions.CREATE_CONVERSATION_RESET,
+    }),
+    addParticipants: (payload) => ({
+        type: actions.ADD_PARTICIPANTS,
+        payload
+    }),
+    addParticipantsReset: () => ({
+        type: actions.ADD_PARTICIPANTS_RESET,
     }),
 }
   

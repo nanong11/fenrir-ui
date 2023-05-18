@@ -220,6 +220,7 @@ export default function Layout({ children }) {
     fectchConversationByUserIdData,
     fectchConversationByUserIdLoading,
     fectchConversationByUserIdFailed,
+    socketJoined,
   ])
 
   return (

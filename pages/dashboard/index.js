@@ -10,6 +10,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import usersAction from '@/redux/users/actions'
 import Users from '@/components/users/users';
 import Channels from '@/components/channels/channels';
+import moment from 'moment-timezone';
+import Scrollbars from '@/components/utility/customScrollbar'
 
 const {
   logout,
@@ -120,7 +122,7 @@ export default function Dashboard() {
   })
 
   const handleMenuItemOnClick = (value) => {
-    console.log('MENU_VALUE', value)
+    // console.log('MENU_VALUE', value)
     setCollapse(!collapse)
     setHideContent(false)
 
@@ -160,7 +162,7 @@ export default function Dashboard() {
         collapsible
         breakpoint="md"
         collapsedWidth={broken && collapse ? '0' : '80px'}
-        width={broken ? '100vw' : '200px'}
+        width={broken ? '90vw' : '200px'}
         collapsed={broken ? collapse : false}
         onBreakpoint={(broken) => {
           setBroken(broken)
@@ -178,7 +180,7 @@ export default function Dashboard() {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'space-between',
-            width: broken ? '100vw' : '200px',
+            width: broken ? '90vw' : '200px',
             height: '100%',
           }}
           >
@@ -188,7 +190,7 @@ export default function Dashboard() {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'space-between',
-              width: broken ? '85vw' : '200px',
+              width: broken ? '90vw' : '200px',
               rowGap: '10px'
             }}
             >
@@ -204,15 +206,18 @@ export default function Dashboard() {
               >
                 <Avatar shape="square" size="large" icon={<UserOutlined />} />
               </Space>
-              <Menu
-              defaultSelectedKeys={['PROFILE']}
-              mode="inline"
-              items={filteredSideMenuItems}
-              onClick={(e) => handleMenuItemOnClick(e)}
-              style={{
-                background: colorPrimaryBg,
-              }}
-              />
+              
+              <Scrollbars style={{minHeight: '75vh', width: broken ? '90vw' : '200px', transition: 'all 0.2s, background 0s'}} >
+                <Menu
+                defaultSelectedKeys={['PROFILE']}
+                mode="inline"
+                items={filteredSideMenuItems}
+                onClick={(e) => handleMenuItemOnClick(e)}
+                style={{
+                  background: colorPrimaryBg,
+                }}
+                />
+              </Scrollbars>
             </Space>
 
             <Space
@@ -224,41 +229,40 @@ export default function Dashboard() {
         </Sider>
               
         <Layout>
-          {
-            hideContent ? null :
-            <Header
+          <Header
+            style={{
+              padding: '0 10px 0 0',
+              background: colorBgContainer,
+              display: 'flex',
+              justifyContent: broken ? 'space-between' : 'flex-end',
+              columnGap: '20px'
+            }}
+          >
+            {
+              broken ?
+              <Button
+              type="text"
+              icon={collapse ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={handleMenuBtnOnClick}
               style={{
-                padding: '0 10px 0 0',
+                fontSize: '1.5rem',
+                width: 64,
+                height: '100%',
                 background: colorBgContainer,
-                display: 'flex',
-                justifyContent: broken ? 'space-between' : 'flex-end',
-                columnGap: '20px'
+                color: colorPrimary
               }}
-            >
-              {
-                broken ?
-                <Button
-                type="text"
-                icon={collapse ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                onClick={handleMenuBtnOnClick}
-                style={{
-                  fontSize: '1.5rem',
-                  width: 64,
-                  height: '100%',
-                  background: colorBgContainer,
-                  color: colorPrimary
-                }}
-                /> : null
-              }
-
+              /> : null
+            }
+            
+            {
+              hideContent ? null :
               <Space align='center'>
                 <Avatar
                   icon={<AntDesignOutlined />}
                 />
               </Space>
-            </Header>
-          }
-          
+            }
+          </Header>
           
           {
             hideContent ? null :
