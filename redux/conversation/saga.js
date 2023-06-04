@@ -47,6 +47,7 @@ export function* createConversation() {
             });
 
             const apiResult = yield createConversationRequest(payload);
+            // console.log('apiResult', apiResult)
             const result = apiResult.data;
 
             if (apiResult.status === 201) {
@@ -59,7 +60,7 @@ export function* createConversation() {
                     type: actions.CREATE_CONVERSATION_FAILED,
                     payload: {
                         data: result,
-                        message: 'Create Conversation Failed'
+                        message: result.message === 'conversation name already exist' ? 'Conversation name already exist' : 'Create Conversation Failed'
                     }
                 });
             }

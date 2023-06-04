@@ -129,7 +129,7 @@ export default function Channels(props) {
     if (createConversationFailed && !createConversationData && !createConversationLoading) {
       messageApi.open({
         type: 'error',
-        content: 'Creating Channel Failed!',
+        content: createConversationFailed.message,
       });
       dispatch(createConversationReset())
     }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import DashboardStyled from './dashboard.styles'
 import { Layout, Menu, theme, Typography, Button, Avatar, Space } from 'antd';
 // import { useSelector } from 'react-redux';
@@ -39,10 +39,15 @@ export default function Dashboard() {
   // const allUsersFailed = useSelector(state => state.usersReducer.allUsersFailed)
   const conversationArray = useSelector(state => state.utilityReducer.conversationArray)
 
+  const createConversationData = useSelector(state => state.conversationReducer.createConversationData)
+  const createConversationLoading = useSelector(state => state.conversationReducer.createConversationLoading)
+  const createConversationFailed = useSelector(state => state.conversationReducer.createConversationFailed)
+
   const [collapse, setCollapse] = useState(true)
   const [broken, setBroken] = useState(null)
   const [selectedMenu, setSelectedMenu] = useState(<Profile usersData={usersData} />)
   const [hideContent, setHideContent] = useState(false)
+  const [currentMenuName, setCurrentMenuName] = useState('PROFILE')
 
   conversationArray?.sort((conversA, conversB) => {
     const lastMessageA = conversA.messages[conversA.messages.length - 1]
@@ -57,10 +62,18 @@ export default function Dashboard() {
     return lastMessageBCreatedAtMilliseconds - lastMessageACreatedAtInMilliseconds
   })
 
+  const menuScrollbar = useRef(null)
+
   useEffect(() => {
     // if (role === 'admin' && !allUsers && !allUsersLoading && !allUsersFailed) {
     //   dispatch(fetchAllUsers())
     // }
+
+    if (createConversationData && !createConversationLoading && !createConversationFailed) {
+      setCurrentMenuName(createConversationData.data.name)
+      setSelectedMenu(<Channels channelname={createConversationData.data.name} />)
+      menuScrollbar?.current?.scrollToTop({ behavior: 'smooth' })
+    }
   
   }, [
     // dispatch,
@@ -68,6 +81,9 @@ export default function Dashboard() {
     // allUsers,
     // allUsersLoading,
     // allUsersFailed,
+    createConversationData,
+    createConversationLoading,
+    createConversationFailed,
   ])
   
   const sideMenuItems = [
@@ -128,19 +144,23 @@ export default function Dashboard() {
 
     switch (value.keyPath[value.keyPath.length - 1]) {
       case 'PROFILE':
+        setCurrentMenuName('PROFILE')
         setSelectedMenu(<Profile usersData={usersData} />)
         break;
 
       case 'USERS':
+        setCurrentMenuName('USERS')
         setSelectedMenu(<Users />)
         break;
 
       case 'CHANNELS':
+        setCurrentMenuName(value.key)
         setSelectedMenu(<Channels channelname={value.key} />)
         break;
 
       default:
-        setSelectedMenu(value.key)
+        setCurrentMenuName(value.key)
+        setSelectedMenu(<Profile usersData={usersData} />)
         break;
     }
   }
@@ -207,12 +227,13 @@ export default function Dashboard() {
                 <Avatar shape="square" size="large" icon={<UserOutlined />} />
               </Space>
               
-              <Scrollbars style={{minHeight: '75vh', width: broken ? '90vw' : '200px', transition: 'all 0.2s, background 0s'}} >
+              <Scrollbars style={{minHeight: '75vh', width: broken ? '90vw' : '200px', transition: 'all 0.2s, background 0s'}} ref={menuScrollbar}>
                 <Menu
                 defaultSelectedKeys={['PROFILE']}
                 mode="inline"
                 items={filteredSideMenuItems}
                 onClick={(e) => handleMenuItemOnClick(e)}
+                selectedKeys={currentMenuName}
                 style={{
                   background: colorPrimaryBg,
                   border: 'none',
