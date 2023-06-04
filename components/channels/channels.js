@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react'
 import ChannelsStyled from './channels.styles'
 import { useDispatch, useSelector } from 'react-redux'
 import { Typography, theme, Input, Layout, Button, Modal, Form, message, Select, Tooltip, Menu, List, Avatar } from 'antd'
-import { InfoCircleFilled, MoreOutlined, ProfileFilled, UserOutlined, UsergroupAddOutlined } from '@ant-design/icons';
+import { InfoCircleFilled, LeftOutlined, ProfileFilled, UserOutlined, UsergroupAddOutlined } from '@ant-design/icons';
 import conversationAction from '@/redux/conversation/actions'
 import utilityActions from '@/redux/utility/actions'
 import Scrollbars from '@/components/utility/customScrollbar'
+import moment from 'moment-timezone';
 
 const {
   createConversation,
@@ -48,7 +49,6 @@ export default function Channels(props) {
   const createConversationData = useSelector(state => state.conversationReducer.createConversationData)
   const createConversationLoading = useSelector(state => state.conversationReducer.createConversationLoading)
   const createConversationFailed = useSelector(state => state.conversationReducer.createConversationFailed)
-  const allUsers = useSelector(state => state.usersReducer.allUsers)
   const allUsersArray = useSelector(state => state.utilityReducer.allUsersArray)
 
   const addParticipantsData = useSelector(state => state.conversationReducer.addParticipantsData)
@@ -76,8 +76,11 @@ export default function Channels(props) {
   const [modalTitle, setModalTitle] = useState(null);
   const [optionSiderCollapse, setOptionSiderCollapse] = useState(true);
   const [participantSiderCollapse, setParticipantSiderCollapse] = useState(true);
+  const [participantInfoCollapse, setParticipantInfoCollapse] = useState(true);
   const [broken, setBroken] = useState(null)
   const [newPaticipantsArr, setNewPaticipantsArr] = useState(null)
+  const [participantInfo, setParticipantInfo] = useState(null)
+  const [currentChannelName, setCurrentChannelName] = useState(channelname)
 
   const sideMenuItems = [
     {
@@ -148,6 +151,11 @@ export default function Channels(props) {
       });
       dispatch(addParticipantsReset())
     }
+
+    if (currentChannelName !== channelname) {
+      setParticipantInfoCollapse(true)
+      setCurrentChannelName(channelname)
+    }
   }, [
     dispatch,
     createConversationData,
@@ -160,6 +168,8 @@ export default function Channels(props) {
     messageApi,
     newPaticipantsArr,
     socketIo,
+    currentChannelName,
+    channelname,
   ])
 
   const handleShowModal = (value) => {
@@ -199,11 +209,13 @@ export default function Channels(props) {
   const handleParticipantsOnClick = () => {
     setParticipantSiderCollapse(!participantSiderCollapse)
     setOptionSiderCollapse(true)
+    setParticipantInfoCollapse(true)
   }
 
   const handleOptionOnClick = () => {
     setOptionSiderCollapse(!optionSiderCollapse)
     setParticipantSiderCollapse(true)
+    setParticipantInfoCollapse(true)
   }
 
   const handleMenuItemOnClick = (value) => {
@@ -215,6 +227,13 @@ export default function Channels(props) {
       default:
         break;
     }
+  }
+
+  const handleParticipantsNameOnClick = (value) => {
+    setParticipantInfo(value)
+    setParticipantInfoCollapse(false)
+    setOptionSiderCollapse(true)
+    setParticipantSiderCollapse(true)
   }
 
   return (
@@ -265,6 +284,7 @@ export default function Channels(props) {
 
           </Content>
 
+          {/* OPTIONS */}
           <Sider
           trigger={null}
           collapsible
@@ -327,7 +347,8 @@ export default function Channels(props) {
               </Scrollbars>
             </div>
           </Sider>
-
+          
+          {/* PARTICIPANTS LIST */}
           <Sider
           trigger={null}
           collapsible
@@ -359,6 +380,7 @@ export default function Channels(props) {
                 enterButton
                 />
               </div>
+
               <Scrollbars style={{height: '100%', transition: 'all 0.2s, background 0s'}} >
                 <div>
                   <Title level={5} style={{margin: 0}}>Admins</Title>
@@ -370,13 +392,15 @@ export default function Channels(props) {
                       return (
                         <List.Item
                         key={index}
-                        actions={[
-                          <Link key={index} className='link-btn'><MoreOutlined style={{fontSize: '1.5rem'}} /></Link>
-                        ]}
+                        // actions={[
+                        //   role === 'admin' ?
+                        //   <Link key={index} className='link-btn'><MoreOutlined style={{fontSize: '1.5rem'}} /></Link>
+                        //   : null
+                        // ]}
                         >
                           <List.Item.Meta
                           avatar={<Avatar style={{fontSize: '1.3rem'}} src={item.profilePic ? item.profilePic : <UserOutlined /> } />}
-                          title={<a>{item.name}</a>}
+                          title={<a onClick={() => handleParticipantsNameOnClick(item)}>{item.name}</a>}
                           description={item.isOnline ? 'online' : 'offline'}
                           style={{alignItems: 'center'}}
                           />
@@ -384,9 +408,7 @@ export default function Channels(props) {
                       )
                     }
                   }}
-                  >
-
-                  </List>
+                  />
                 </div>
 
                 <div>
@@ -399,13 +421,13 @@ export default function Channels(props) {
                       return (
                         <List.Item
                         key={index}
-                        actions={[
-                          <Link key={index} className='link-btn'><MoreOutlined style={{fontSize: '1.5rem'}} /></Link>
-                        ]}
+                        // actions={[
+                        //   role === 'admin' ? <Link key={index} className='link-btn'><MoreOutlined style={{fontSize: '1.5rem'}} /></Link> : null
+                        // ]}
                         >
                           <List.Item.Meta
                           avatar={<Avatar style={{fontSize: '1.3rem'}} src={item.profilePic ? item.profilePic : <UserOutlined /> } />}
-                          title={<a>{item.name}</a>}
+                          title={<a onClick={() => handleParticipantsNameOnClick(item)}>{item.name}</a>}
                           description={item.isOnline ? 'online' : 'offline'}
                           style={{alignItems: 'center'}}
                           />
@@ -413,10 +435,128 @@ export default function Channels(props) {
                       )
                     }
                   }}
-                  >
-
-                  </List>
+                  />
                 </div>
+              </Scrollbars>
+            </div>
+          </Sider>
+
+          {/* PARTICIPANT INFO */}
+          <Sider
+          trigger={null}
+          collapsible
+          breakpoint="md"
+          collapsedWidth={0}
+          width={broken ? '100%' : '350px'}
+          collapsed={participantInfoCollapse}
+          onBreakpoint={(broken) => {
+            setBroken(broken)
+          }}
+          // onCollapse={(collapsed, type) => {
+          //   setCollapse(collapsed)
+          // }}
+          style={{
+            background: colorBgContainer,
+            // border: `1px solid ${colorPrimaryBg}`,
+            marginTop: '2px',
+            height: '100%'
+          }}
+          >
+            <div style={{padding: 10, height: '100%', display: 'flex', flexDirection: 'column', gap: '16px'}}>
+              <Scrollbars style={{height: '100%', transition: 'all 0.2s, background 0s'}} >
+                <LeftOutlined style={{fontSize: '1.2rem', color: colorPrimary, margin: '0 0 16px 0'}} onClick={handleParticipantsOnClick} />
+
+                <div
+                style={{
+                  margin: '0 0 16px 0',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  rowGap: '16px'
+                }}
+                >
+                  <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                  >
+                    <Avatar style={{fontSize: '1.3rem', margin: '0 0 16px 0'}} src={participantInfo?.profilePic ? participantInfo.profilePic : <UserOutlined /> } />
+                    <Title level={5} style={{margin: 0, textAlign: 'center'}}>{participantInfo?.name}</Title>
+                    <Text>{participantInfo?.role}</Text>
+                  </div>
+
+                  <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    rowGap: '10px'
+                  }}
+                  >
+                    <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between'
+                    }}
+                    >
+                      <Text style={{minWidth: '80px'}}>Username:</Text>
+                      <Text ellipsis>{participantInfo?.username ? participantInfo.username : ''}</Text>
+                    </div>
+
+                    <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between'
+                    }}
+                    >
+                      <Text style={{minWidth: '80px'}}>Email:</Text>
+                      <Text ellipsis>{participantInfo?.email ? participantInfo.email : ''}</Text>
+                    </div>
+
+                    <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between'
+                    }}
+                    >
+                      <Text style={{minWidth: '80px'}}>Added By:</Text>
+                      <Text ellipsis>{participantInfo?.addedBy?.name ? participantInfo.addedBy.name : ''}</Text>
+                    </div>
+
+                    <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between'
+                    }}
+                    >
+                      <Text style={{minWidth: '80px'}}>Added On:</Text>
+                      <Text ellipsis>{participantInfo?.addedOn ? moment.tz(participantInfo?.addedOn, "Asia/Manila").format('YYYY-MM-DD HH:mm:ss').replace(/,/g, " ") : ''}</Text>
+                    </div>
+
+                    <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between'
+                    }}
+                    >
+                      <Text style={{minWidth: '80px'}}>Staus:</Text>
+                      <Text ellipsis>{participantInfo?.isOnline ? 'Online' : 'Offline'}</Text>
+                    </div>
+                  </div>
+                </div>
+
+                {
+                  role === 'admin' ?
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }} >
+                    <Button danger >Remove</Button>
+                  </div>
+                  : null
+                }
               </Scrollbars>
             </div>
           </Sider>

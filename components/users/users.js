@@ -485,7 +485,12 @@ export default function Users() {
             alignItems: 'center'
           }}
           > 
-            <span>
+            <span
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap'
+            }}
+            >
               <Typography.Link
                 onClick={() => save(record.key)}
                 style={{
@@ -502,10 +507,7 @@ export default function Users() {
             <Popconfirm title="Sure to reset password?" onConfirm={() => handleResetPassword(record)}>
               <Button
               type='dashed'
-              style={{
-                color: colorError,
-                borderColor: colorError
-              }}
+              danger
               >
                 Reset
               </Button>
