@@ -120,7 +120,7 @@ export function* addParticipants() {
             });
 
             const apiResult = yield addParticipantsRequest(payload);
-            console.log('apiResult', apiResult)
+            // console.log('apiResult', apiResult)
             const result = apiResult.data;
 
             if (apiResult.status === 200) {
@@ -149,6 +149,43 @@ export function* addParticipants() {
     });
 }
 
+export function* removeParticipants() {
+    yield takeEvery('REMOVE_PARTICIPANTS', function* ({payload}) {
+        try {
+            yield put({
+                type: actions.REMOVE_PARTICIPANTS_LOADING,
+            });
+
+            const apiResult = yield removeParticipantsRequest(payload);
+            // console.log('apiResult', apiResult)
+            const result = apiResult.data;
+
+            if (apiResult.status === 200) {
+                yield put({
+                    type: actions.REMOVE_PARTICIPANTS_SUCCESS,
+                    payload: result,
+                });
+            } else {
+                yield put({
+                    type: actions.REMOVE_PARTICIPANTS_FAILED,
+                    payload: {
+                        data: result,
+                        message: 'Remove Participant Failed'
+                    }
+                });
+            }
+        } catch (error) {
+            yield put({
+                type: actions.REMOVE_PARTICIPANTS_FAILED,
+                payload: {
+                    data: error,
+                    message: 'Remove Participant Error'
+                }
+            });
+        }
+    });
+}
+
 function fetchConversationByUserIdRequest(payload) {
     return get(`/conversation/find_conversation_by_userid/${payload}`);  
 }
@@ -165,11 +202,16 @@ function addParticipantsRequest(payload) {
     return putR(`/conversation/add_participant/${payload.conversationId}`, payload.body);  
 }
 
+function removeParticipantsRequest(payload) {
+    return putR(`/conversation/remove_participant/${payload.conversationId}`, payload.body);  
+}
+
 export default function* rootSaga() {
     yield all([
       fork(fetchConversationByUserId),
       fork(createConversation),
       fork(fetchAllConversation),
       fork(addParticipants),
+      fork(removeParticipants),
     ])
 }

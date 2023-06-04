@@ -16,6 +16,10 @@ const initialState = {
     addParticipantsData: null,
     addParticipantsDataLoading: false,
     addParticipantsDataFailed: null,
+
+    removeParticipantsData: null,
+    removeParticipantsDataLoading: false,
+    removeParticipantsDataFailed: null,
 }
 
 export default function conversationReducer(state = initialState, action) {
@@ -123,6 +127,32 @@ export default function conversationReducer(state = initialState, action) {
                 addParticipantsData: null,
                 addParticipantsDataLoading: false,
                 addParticipantsDataFailed: null,
+            }
+        case actions.REMOVE_PARTICIPANTS_SUCCESS:
+            return {
+                ...state,
+                removeParticipantsData: action.payload,
+                removeParticipantsDataLoading: false,
+                removeParticipantsDataFailed: null,
+            }
+        case actions.REMOVE_PARTICIPANTS_LOADING:
+            return {
+                ...state,
+                removeParticipantsDataLoading: true,
+            }
+        case actions.REMOVE_PARTICIPANTS_FAILED:
+            return {
+                ...state,
+                removeParticipantsData: null,
+                removeParticipantsDataLoading: false,
+                removeParticipantsDataFailed: action.payload,
+            }
+        case actions.REMOVE_PARTICIPANTS_RESET:
+            return {
+                ...state,
+                removeParticipantsData: null,
+                removeParticipantsDataLoading: false,
+                removeParticipantsDataFailed: null,
             }
         
         default:

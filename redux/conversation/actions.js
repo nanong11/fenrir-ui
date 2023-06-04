@@ -23,6 +23,12 @@ const actions = {
     ADD_PARTICIPANTS_FAILED: "ADD_PARTICIPANTS_FAILED",
     ADD_PARTICIPANTS_RESET: "ADD_PARTICIPANTS_RESET",
 
+    REMOVE_PARTICIPANTS: "REMOVE_PARTICIPANTS",
+    REMOVE_PARTICIPANTS_SUCCESS: "REMOVE_PARTICIPANTS_SUCCESS",
+    REMOVE_PARTICIPANTS_LOADING: "REMOVE_PARTICIPANTS_LOADING",
+    REMOVE_PARTICIPANTS_FAILED: "REMOVE_PARTICIPANTS_FAILED",
+    REMOVE_PARTICIPANTS_RESET: "REMOVE_PARTICIPANTS_RESET",
+
     fetchConversationByUserId: (payload) => ({
         type: actions.FETCH_CONVERSATION_BY_USERID,
         payload
@@ -49,6 +55,13 @@ const actions = {
     }),
     addParticipantsReset: () => ({
         type: actions.ADD_PARTICIPANTS_RESET,
+    }),
+    removeParticipants: (payload) => ({
+        type: actions.REMOVE_PARTICIPANTS,
+        payload
+    }),
+    removeParticipantsReset: () => ({
+        type: actions.REMOVE_PARTICIPANTS_RESET,
     }),
 }
   

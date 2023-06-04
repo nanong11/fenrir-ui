@@ -236,9 +236,28 @@ export default function Layout({ children }) {
       dispatch(setConversationArray([conversation, ...conversationArray]))
     }
 
+    const participantRemoved = (conversation) => {
+      const conversationIndex = conversationArray.findIndex(item => item._id === conversation._id)
+      if (conversationIndex > -1) {
+        const oldConversation = conversationArray[conversationIndex];
+        conversationArray.splice(conversationIndex, 1, {...oldConversation,...conversation,});
+        dispatch(setConversationArray([...conversationArray]))
+      }
+    }
+
+    const removedInConversation = (conversation) => {
+      const conversationIndex = conversationArray.findIndex(item => item._id === conversation._id)
+      if (conversationIndex > -1) {
+        conversationArray.splice(conversationIndex, 1);
+        dispatch(setConversationArray([...conversationArray]))
+      }
+    }
+
     socket.on('incomming_user', incommingUser)
     socket.on('new_participant_added', newParticipantAdded)
     socket.on('added_in_conversation', addedInConversation)
+    socket.on('participant_removed', participantRemoved)
+    socket.on('removed_in_conversation', removedInConversation)
 
     return () => socket.off();
   }, [

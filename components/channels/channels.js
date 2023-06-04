@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import ChannelsStyled from './channels.styles'
 import { useDispatch, useSelector } from 'react-redux'
-import { Typography, theme, Input, Layout, Button, Modal, Form, message, Select, Tooltip, Menu, List, Avatar } from 'antd'
+import { Typography, theme, Input, Layout, Button, Modal, Form, message, Select, Tooltip, Menu, List, Avatar, Empty } from 'antd'
 import { InfoCircleFilled, LeftOutlined, ProfileFilled, UserOutlined, UsergroupAddOutlined } from '@ant-design/icons';
 import conversationAction from '@/redux/conversation/actions'
 import utilityActions from '@/redux/utility/actions'
@@ -13,6 +13,8 @@ const {
   createConversationReset,
   addParticipants,
   addParticipantsReset,
+  removeParticipants,
+  removeParticipantsReset,
 } = conversationAction
 
 const {
@@ -55,23 +57,30 @@ export default function Channels(props) {
   const addParticipantsDataLoading = useSelector(state => state.conversationReducer.addParticipantsDataLoading)
   const addParticipantsDataFailed = useSelector(state => state.conversationReducer.addParticipantsDataFailed)
 
+  const removeParticipantsData = useSelector(state => state.conversationReducer.removeParticipantsData)
+  const removeParticipantsDataLoading = useSelector(state => state.conversationReducer.removeParticipantsDataLoading)
+  const removeParticipantsDataFailed = useSelector(state => state.conversationReducer.removeParticipantsDataFailed)
+
   const currentChannel = conversationArray.find(conversation => conversation.name === channelname)
   const participants = currentChannel && currentChannel.participants ? currentChannel.participants : []
 
-  const selectUserOption = [];
-  if (allUsersArray && allUsersArray.length > 0) {
-    for (let i = 0; i < allUsersArray.length; i++) {
-      const user = allUsersArray[i];
-      const isUserExist = currentChannel?.participants.find(participant => participant._id === user._id)
-      if (!isUserExist && user.isActive) {
-        selectUserOption.push({
-          value: user._id,
-          label: user.name,
-        })
+  const selectUserOption = useMemo(() => {
+    const data = []
+    if (allUsersArray && allUsersArray.length > 0) {
+      for (let i = 0; i < allUsersArray.length; i++) {
+        const user = allUsersArray[i];
+        const isUserExist = currentChannel?.participants.find(participant => participant._id === user._id)
+        if (!isUserExist && user.isActive) {
+          data.push({
+            value: user._id,
+            label: user.name,
+          })
+        }
       }
     }
-  }
-
+    return data
+  }, [allUsersArray, currentChannel]);
+  
   const [showModal, setShowModal] = useState(false);
   const [modalTitle, setModalTitle] = useState(null);
   const [optionSiderCollapse, setOptionSiderCollapse] = useState(true);
@@ -150,11 +159,60 @@ export default function Channels(props) {
         content: 'Adding Participants Failed!',
       });
       dispatch(addParticipantsReset())
+      setShowModal(false)
+    }
+
+    if (removeParticipantsData && !removeParticipantsDataLoading && !removeParticipantsDataFailed) {
+      socketIo.emit('removed_participant', {
+        conversation: removeParticipantsData.data,
+        removedPaticipantsArr: [participantInfo._id]
+      })
+
+      const conversationIndex = conversationArray.findIndex(conversation => conversation._id === removeParticipantsData.data._id)
+      if (conversationIndex > -1) {
+        const conversation = conversationArray[conversationIndex];
+        if (participantInfo._id === usersData.data._id) {
+          conversationArray.splice(conversationIndex, 1);
+        } else {
+          conversationArray.splice(conversationIndex, 1, {...conversation,...removeParticipantsData.data,});
+        }
+        
+        dispatch(setConversationArray([...conversationArray]))
+      }
+
+      dispatch(removeParticipantsReset())
+      setParticipantInfoCollapse(true)
+      setParticipantSiderCollapse(false)
+      setParticipantInfo(null)
+      setShowModal(false)
+    }
+
+    if (!removeParticipantsData && !removeParticipantsDataLoading && removeParticipantsDataFailed) {
+      messageApi.open({
+        type: 'error',
+        content: 'Removing Participants Failed!',
+      });
+      dispatch(removeParticipantsReset())
+      setShowModal(false)
     }
 
     if (currentChannelName !== channelname) {
       setParticipantInfoCollapse(true)
       setCurrentChannelName(channelname)
+    }
+
+    if (!currentChannel) {
+      if (!optionSiderCollapse) {
+        setOptionSiderCollapse(true)
+      }
+
+      if (!participantSiderCollapse) {
+        setParticipantSiderCollapse(true)
+      }
+
+      if (!participantInfoCollapse) {
+        setParticipantInfoCollapse(true)
+      }
     }
   }, [
     dispatch,
@@ -170,6 +228,15 @@ export default function Channels(props) {
     socketIo,
     currentChannelName,
     channelname,
+    removeParticipantsData,
+    removeParticipantsDataLoading,
+    removeParticipantsDataFailed,
+    optionSiderCollapse,
+    participantSiderCollapse,
+    participantInfoCollapse,
+    currentChannel,
+    participantInfo,
+    usersData,
   ])
 
   const handleShowModal = (value) => {
@@ -180,7 +247,6 @@ export default function Channels(props) {
 
   const handleOnFinish = (value) => {
     if (modalTitle === 'Create Channel') {
-      console.log('value', value)
       const newConversationData = {
         name: value.channelName,
         participants: [userId],
@@ -191,7 +257,6 @@ export default function Channels(props) {
     }
 
     if (modalTitle === 'Add Participant') {
-      console.log('value', value)
       setNewPaticipantsArr(value.participants)
       const addParticipantsData = {
         conversationId: currentChannel._id,
@@ -203,19 +268,31 @@ export default function Channels(props) {
 
       dispatch(addParticipants(addParticipantsData))
     }
-    
+
+    if (modalTitle === 'Remove Participant') {
+      const removeParticipantsData = {
+        conversationId: currentChannel._id,
+        body: {
+          participants: [participantInfo._id]
+        }
+      }
+
+      dispatch(removeParticipants(removeParticipantsData))
+    }
   }
   
   const handleParticipantsOnClick = () => {
     setParticipantSiderCollapse(!participantSiderCollapse)
     setOptionSiderCollapse(true)
     setParticipantInfoCollapse(true)
+    setParticipantInfo(null)
   }
 
   const handleOptionOnClick = () => {
     setOptionSiderCollapse(!optionSiderCollapse)
     setParticipantSiderCollapse(true)
     setParticipantInfoCollapse(true)
+    setParticipantInfo(null)
   }
 
   const handleMenuItemOnClick = (value) => {
@@ -261,11 +338,17 @@ export default function Channels(props) {
             minWidth: '150px'
           }}
           >
-            <Title level={3} style={{margin: 0}}>{channelname}</Title>
-            <Link className='link-btn' onClick={handleParticipantsOnClick}>{currentChannel?.participants?.length} participants</Link>
+            <Title level={3} style={{margin: 0}}>{currentChannel?.name ? currentChannel?.name : 'Select Channel'}</Title>
+            <Link className='link-btn' onClick={handleParticipantsOnClick}>
+              {currentChannel?.participants?.length ? `${currentChannel?.participants?.length} participants` : ''}
+            </Link>
           </div>
 
-          <InfoCircleFilled style={{fontSize: '1.8rem', color: colorPrimary, cursor: 'pointer'}} onClick={handleOptionOnClick} />
+          {
+            currentChannel ?
+            <InfoCircleFilled style={{fontSize: '1.8rem', color: colorPrimary, cursor: 'pointer'}} onClick={handleOptionOnClick} />
+            : null
+          }
         </Header>
         
         <Layout
@@ -281,7 +364,14 @@ export default function Channels(props) {
             height: '100%'
           }}
           >
-
+            {
+              currentChannel ?
+              null // PUT HERE THE MESSAGES CONTENT
+              :
+              <div style={{height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+              </div>
+            }
           </Content>
 
           {/* OPTIONS */}
@@ -553,7 +643,7 @@ export default function Channels(props) {
                     justifyContent: 'center',
                     alignItems: 'center'
                   }} >
-                    <Button danger >Remove</Button>
+                    <Button danger onClick={() => handleShowModal('Remove Participant')} >Remove</Button>
                   </div>
                   : null
                 }
@@ -564,7 +654,7 @@ export default function Channels(props) {
       </Layout>
 
       <Modal
-      title={modalTitle}
+      title={modalTitle !== 'Remove Participant' ? modalTitle : null}
       open={showModal} 
       footer={null} 
       destroyOnClose
@@ -601,7 +691,7 @@ export default function Channels(props) {
                 </Button>
               </Form.Item>
             </>
-            :
+            : modalTitle === 'Add Participant' ?
             <>
               <Form.Item
               name='participants'
@@ -636,6 +726,33 @@ export default function Channels(props) {
                 </Button>
               </Form.Item>
             </>
+            : modalTitle === 'Remove Participant' ?
+            <>
+              <Form.Item
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                margin: '10px 0 0 0'
+              }}
+              >
+                <Text style={{fontSize: '1.1rem'}}>
+                  Remove <Text style={{fontWeight: '700', fontSize: '1.1rem', fontStyle: 'italic'}}>{participantInfo?._id === usersData?.data?._id ? 'yourself' : participantInfo?.name}</Text> in <Text style={{fontWeight: '700', fontSize: '1.1rem', fontStyle: 'italic'}}>{currentChannelName}?</Text>
+                </Text>
+              </Form.Item>
+
+              <Form.Item
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                margin: '10px 0 0 0'
+              }}
+              >
+                <Button htmlType="submit" loading={removeParticipantsDataLoading} danger>
+                  Confirm
+                </Button>
+              </Form.Item>
+            </>
+            : null
           }
         </Form>
       </Modal>
