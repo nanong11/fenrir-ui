@@ -191,7 +191,7 @@ export default function Dashboard() {
               alignItems: 'center',
               justifyContent: 'space-between',
               width: broken ? '90vw' : '200px',
-              rowGap: '10px'
+              rowGap: '10px',
             }}
             >
               <Space
@@ -215,6 +215,7 @@ export default function Dashboard() {
                 onClick={(e) => handleMenuItemOnClick(e)}
                 style={{
                   background: colorPrimaryBg,
+                  border: 'none',
                 }}
                 />
               </Scrollbars>

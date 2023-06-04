@@ -11,8 +11,8 @@ export default React.forwardRef((props, ref) => (
     autoHideDuration={200}
     renderView={props => <div {...props} className="scroll-view" />}
     // autoHeight
-    autoHeightMin={0}
-    autoHeightMax={200}
+    // autoHeightMin={0}
+    // autoHeightMax={200}
     thumbMinSize={30}
     universal={true}
     onUpdate={(value) => {

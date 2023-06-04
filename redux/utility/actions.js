@@ -18,6 +18,12 @@ const actions = {
     SET_CONVERSATION_ARRAY: "SET_CONVERSATION_ARRAY",
     SET_CONVERSATION_ARRAY_SUCCESS: "SET_CONVERSATION_ARRAY_SUCCESS",
 
+    SET_ALL_USERS_ARRAY: "SET_ALL_USERS_ARRAY",
+    SET_ALL_USERS_ARRAY_SUCCESS: "SET_ALL_USERS_ARRAY_SUCCESS",
+
+    SET_USERS_TABLE_DATA: "SET_USERS_TABLE_DATA",
+    SET_USERS_TABLE_DATA_SUCCESS: "SET_USERS_TABLE_DATA_SUCCESS",
+
     // * Declare the actions function *
     setView: (payload) => ({
         type: actions.SET_VIEW,
@@ -46,6 +52,16 @@ const actions = {
 
     setConversationArray: (payload) => ({
         type: actions.SET_CONVERSATION_ARRAY,
+        payload
+    }),
+
+    setAllUsersArray: (payload) => ({
+        type: actions.SET_ALL_USERS_ARRAY,
+        payload
+    }),
+
+    setUsersTableData: (payload) => ({
+        type: actions.SET_USERS_TABLE_DATA,
         payload
     }),
  }

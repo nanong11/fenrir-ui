@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import UsersStyled from './users.styles'
 import { Button, Form, Input, Modal, Popconfirm, Select, Space, Table, Typography, message, theme } from 'antd'
 import usersActions from '@/redux/users/actions'
 import { useDispatch, useSelector } from 'react-redux'
 import { PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import Highlighter from 'react-highlight-words';
+import utilityActions from '@/redux/utility/actions'
 
 const {
   updateUser,
@@ -13,6 +14,10 @@ const {
   signUpReset,
   fetchAllUsers,
 } = usersActions
+
+const {
+  setUsersTableData,
+} = utilityActions;
 
 const { Title, Text } = Typography
 
@@ -260,23 +265,8 @@ export default function Users() {
 
   const allUsers = useSelector(state => state.usersReducer.allUsers)
   const allUsersLoading = useSelector(state => state.usersReducer.allUsersLoading)
-
-  const tableData = []
-  if (allUsers && allUsers.data.length > 0) {
-    for (let i = 0; i < allUsers.data.length; i++) {
-      const user = allUsers.data[i];
-      tableData.push({
-        key: i,
-        userId: user._id,
-        name: user.name,
-        username: user.username,
-        email: user.email ? user.email : '',
-        role: user.role.charAt(0).toUpperCase() + user.role.slice(1),
-        active: user.isActive ? 'Yes' : 'No',
-        status: user.isOnline ? 'online' : 'offline'
-      })
-    }
-  }
+  const allUsersArray = useSelector(state => state.utilityReducer.allUsersArray)
+  const usesTableData = useSelector(state => state.utilityReducer.usesTableData)
 
   const updateUserSuccess = useSelector(state => state.usersReducer.updateUserSuccess)
   const updateUserLoading = useSelector(state => state.usersReducer.updateUserLoading)
@@ -289,7 +279,6 @@ export default function Users() {
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const [form] = Form.useForm();
-  const [data, setData] = useState(tableData);
   const [tempData, setTempData] = useState(null);
   const [editingKey, setEditingKey] = useState('');
   const [showAddUserModal, setShowAddUserModal] = useState(false);
@@ -299,6 +288,27 @@ export default function Users() {
 
   const searchInput = useRef(null);
   const [messageApi, contextHolder] = message.useMessage();
+
+  const tableData = useMemo(() => {
+    const data = [];
+    if (allUsersArray && allUsersArray.length > 0) {
+      for (let i = 0; i < allUsersArray.length; i++) {
+        const user = allUsersArray[i];
+        data.push({
+          key: i,
+          userId: user._id,
+          name: user.name,
+          username: user.username,
+          email: user.email ? user.email : '',
+          role: user.role.charAt(0).toUpperCase() + user.role.slice(1),
+          active: user.isActive ? 'Yes' : 'No',
+          status: user.isOnline ? 'online' : 'offline'
+        })
+      }
+    }
+    return data
+  }, [allUsersArray])
+ 
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -533,7 +543,7 @@ export default function Users() {
       const row = await form.validateFields();
       console.log('row', row)
       row.name = row.name.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase())
-      const newData = [...data];
+      const newData = [...usesTableData];
       const index = newData.findIndex((item) => key === item.key);
       if (index > -1) {
         const item = newData[index];
@@ -557,7 +567,7 @@ export default function Users() {
         setTempData(newData);
       } else {
         newData.push(row);
-        setData(newData);
+        dispatch(setUsersTableData(newData))
         setEditingKey('');
       }
     } catch (errInfo) {
@@ -687,7 +697,11 @@ export default function Users() {
   };
 
   useEffect(() => {
-    if (updateUserSuccess && !updateUserLoading && !updateUserFailed && allUsers && allUsers.data.length > 0) {
+    if (!usesTableData) {
+      dispatch(setUsersTableData(tableData))
+    }
+
+    if (updateUserSuccess && !updateUserLoading && !updateUserFailed && allUsersArray && allUsersArray.length > 0) {
       if (resetPassword) {
         setShowPasswordModal(true)
         messageApi.open({
@@ -695,12 +709,12 @@ export default function Users() {
           content: 'User password updated!',
         });
       } else {
-        allUsers.data.forEach((element, index) => {
+        allUsersArray.forEach((element, index) => {
           if (element._id === updateUserSuccess.data._id) {
-            allUsers.data[index] = updateUserSuccess.data
+            allUsersArray[index] = updateUserSuccess.data
           }
         });
-        setData(tempData)
+        dispatch(setUsersTableData(tempData))
         messageApi.open({
           type: 'success',
           content: 'User details updated!',
@@ -722,7 +736,7 @@ export default function Users() {
 
     if (signupSuccessData && !signupLoading && !signupFailed) {
       const newUser = {
-        key: data.length,
+        key: usesTableData.length,
         name: signupSuccessData.data.name,
         username: signupSuccessData.data.username,
         email: signupSuccessData.data.email ? signupSuccessData.data.email : '',
@@ -731,7 +745,7 @@ export default function Users() {
         userId: signupSuccessData.data._id,
         status: 'offline',
       }
-      setData([newUser, ...data])
+      dispatch(setUsersTableData([newUser, ...usesTableData]))
       
       messageApi.open({
         type: 'success',
@@ -763,8 +777,10 @@ export default function Users() {
     signupSuccessData,
     signupLoading,
     signupFailed,
-    data,
     resetPassword,
+    usesTableData,
+    allUsersArray,
+    tableData,
   ])
 
   const addUser = (value) => {
@@ -821,7 +837,7 @@ export default function Users() {
 
   const handleUserTableReload = () => {
     dispatch(fetchAllUsers())
-    setData([...tableData])
+    dispatch(setUsersTableData([...tableData]))
   }
 
   return (
@@ -867,7 +883,7 @@ export default function Users() {
             onChange: cancel,
           }}
           columns={tableColumns}
-          dataSource={data}
+          dataSource={usesTableData}
         />
       </Form>
     </UsersStyled>

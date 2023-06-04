@@ -87,6 +87,38 @@ export function* setConversationArray() {
         } else {
             yield put({
                 type: actions.SET_CONVERSATION_ARRAY_SUCCESS,
+                payload: []
+            });
+        }
+    });
+}
+
+export function* setAllUsersArray() {
+    yield takeEvery('SET_ALL_USERS_ARRAY', function* ({payload}) {
+        if (payload) {
+            yield put({
+                type: actions.SET_ALL_USERS_ARRAY_SUCCESS,
+                payload
+            });
+        } else {
+            yield put({
+                type: actions.SET_ALL_USERS_ARRAY_SUCCESS,
+                payload: []
+            });
+        }
+    });
+}
+
+export function* setUsersTableData() {
+    yield takeEvery('SET_USERS_TABLE_DATA', function* ({payload}) {
+        if (payload) {
+            yield put({
+                type: actions.SET_USERS_TABLE_DATA_SUCCESS,
+                payload
+            });
+        } else {
+            yield put({
+                type: actions.SET_USERS_TABLE_DATA_SUCCESS,
                 payload: null
             });
         }
@@ -101,5 +133,7 @@ export default function* rootSaga() {
       fork(setSocketIo),
       fork(setCurrentOnlineUsers),
       fork(setConversationArray),
+      fork(setAllUsersArray),
+      fork(setUsersTableData),
     ])
 }

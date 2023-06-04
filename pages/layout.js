@@ -33,6 +33,8 @@ const {
   setSocketIo,
   setCurrentOnlineUsers,
   setConversationArray,
+  setAllUsersArray,
+  setUsersTableData,
 } = utilityActions;
 
 const arrayPath = [
@@ -69,6 +71,7 @@ export default function Layout({ children }) {
 
   const usersData = useSelector(state => state.authReducer.usersData)
   const userId = usersData && usersData.data ? usersData.data._id : null
+  const role = usersData?.data?.role
   const logoutLoading = useSelector(state => state.authReducer.logoutLoading)
   const authenticateLoading = useSelector(state => state.authReducer.authenticateLoading)
   const authenticateFailed = useSelector(state => state.authReducer.authenticateFailed)
@@ -80,6 +83,9 @@ export default function Layout({ children }) {
   const fectchConversationByUserIdData = useSelector(state => state.conversationReducer.fectchConversationByUserIdData)
   const fectchConversationByUserIdLoading = useSelector(state => state.conversationReducer.fectchConversationByUserIdLoading)
   const fectchConversationByUserIdFailed = useSelector(state => state.conversationReducer.fectchConversationByUserIdFailed)
+
+  const conversationArray = useSelector(state => state.utilityReducer.conversationArray)
+  const allUsersArray = useSelector(state => state.utilityReducer.allUsersArray)
 
   const [loading, setLoading] = useState(true)
   const [isOnline, setIsOnline] = useState(false)
@@ -121,7 +127,7 @@ export default function Layout({ children }) {
     }
 
     // FOR HANDLING LOADING PAGE
-    if (logoutLoading || authenticateLoading) {
+    if (logoutLoading || authenticateLoading || fectchConversationByUserIdLoading) {
       setLoading(true)
     }
 
@@ -136,8 +142,12 @@ export default function Layout({ children }) {
     }
 
     // FOR FETCHING ALL USERS
-    if (usersData?.data?.role === 'admin' && !allUsers && !allUsersLoading && !allUsersFailed) {
+    if (role === 'admin' && !allUsers && !allUsersLoading && !allUsersFailed) {
       dispatch(fetchAllUsers())
+    }
+
+    if (role === 'admin' && allUsersArray.length === 0 && allUsers && allUsers.data.length > 0) {
+      dispatch(setAllUsersArray(allUsers.data))
     }
 
     // FOR CONVERSATION
@@ -153,11 +163,11 @@ export default function Layout({ children }) {
     if (!isOnline && userId) {
       socket.emit('online', userId)
       setIsOnline(true)
-      dispatch(authenticate())
+      // dispatch(authenticate())
     }
 
     if (!socketJoined && fectchConversationByUserIdData && fectchConversationByUserIdData.data.length > 0) {
-      // socket.emit('personal_room', userId)
+      socket.emit('personal_room', userId)
       fectchConversationByUserIdData.data.map(conversation => socket.emit('join_conversation', conversation))
       
       // fectchConversationByUserIdData.data.map(conversation => {
@@ -186,24 +196,55 @@ export default function Layout({ children }) {
     }
 
     const incommingUser = (incommingUser) => {
-      // console.log('currentOnline', currentOnlineUsers)
-      // dispatch(setCurrentOnlineUsers(currentOnlineUsers))
+      const filteredConversationsArray = conversationArray.filter(conversation => conversation.participants.map(participant => {
+        return participant._id === incommingUser._id
+      }))
 
-      if (usersData?.data?.role === 'admin' && incommingUser) {
-        console.log('incommingUser', incommingUser)
-        const index = allUsers?.data?.findIndex((item) => incommingUser._id === item._id )
+      for (let i = 0; i < filteredConversationsArray.length; i++) {
+        const conversation = filteredConversationsArray[i];
+        const findIndex = conversation.participants.findIndex(participant => participant._id === incommingUser._id)
+        if (findIndex > -1) {
+          conversation.participants.splice(findIndex, 1, {
+            ...conversation.participants[findIndex],
+            isOnline: incommingUser.isOnline
+          })
+        }
+        
+      }
+      dispatch(setConversationArray([...conversationArray]))
+      
+      if (role === 'admin' && incommingUser) {
+        const index = allUsersArray.findIndex((item) => incommingUser._id === item._id )
         if (index > -1) {
-          allUsers?.data?.splice(index, 1, incommingUser)
+          allUsersArray.splice(index, 1, incommingUser)
+          dispatch(setAllUsersArray([...allUsersArray]))
+          dispatch(setUsersTableData(null))
         }
       }
     }
 
+    const newParticipantAdded = (conversation) => {
+      const conversationIndex = conversationArray.findIndex(item => item._id === conversation._id)
+      if (conversationIndex > -1) {
+        const oldConversation = conversationArray[conversationIndex];
+        conversationArray.splice(conversationIndex, 1, {...oldConversation,...conversation,});
+        dispatch(setConversationArray([...conversationArray]))
+      }
+    }
+
+    const addedInConversation = (conversation) => {
+      dispatch(setConversationArray([conversation, ...conversationArray]))
+    }
+
     socket.on('incomming_user', incommingUser)
+    socket.on('new_participant_added', newParticipantAdded)
+    socket.on('added_in_conversation', addedInConversation)
 
     return () => socket.off();
   }, [
     dispatch,
     userId,
+    role,
     windowSize,
     loading,
     router,
@@ -221,6 +262,8 @@ export default function Layout({ children }) {
     fectchConversationByUserIdLoading,
     fectchConversationByUserIdFailed,
     socketJoined,
+    allUsersArray,
+    conversationArray,
   ])
 
   return (
