@@ -15,6 +15,8 @@ const {
   addParticipantsReset,
   removeParticipants,
   removeParticipantsReset,
+  updateConversation,
+  updateConversationReset,
 } = conversationAction
 
 const {
@@ -61,6 +63,20 @@ export default function Channels(props) {
   const removeParticipantsDataLoading = useSelector(state => state.conversationReducer.removeParticipantsDataLoading)
   const removeParticipantsDataFailed = useSelector(state => state.conversationReducer.removeParticipantsDataFailed)
 
+  const updateConversationData = useSelector(state => state.conversationReducer.updateConversationData)
+  const updateConversationLoading = useSelector(state => state.conversationReducer.updateConversationLoading)
+  const updateConversationFailed = useSelector(state => state.conversationReducer.updateConversationFailed)
+  
+  const [showModal, setShowModal] = useState(false);
+  const [modalTitle, setModalTitle] = useState(null);
+  const [optionSiderCollapse, setOptionSiderCollapse] = useState(true);
+  const [participantSiderCollapse, setParticipantSiderCollapse] = useState(true);
+  const [participantInfoCollapse, setParticipantInfoCollapse] = useState(true);
+  const [broken, setBroken] = useState(null)
+  const [newPaticipantsArr, setNewPaticipantsArr] = useState(null)
+  const [participantInfo, setParticipantInfo] = useState(null)
+  const [currentChannelName, setCurrentChannelName] = useState(channelname)
+
   const currentChannel = conversationArray.find(conversation => conversation.name === channelname)
   const participants = currentChannel && currentChannel.participants ? currentChannel.participants : []
 
@@ -80,16 +96,6 @@ export default function Channels(props) {
     }
     return data
   }, [allUsersArray, currentChannel]);
-  
-  const [showModal, setShowModal] = useState(false);
-  const [modalTitle, setModalTitle] = useState(null);
-  const [optionSiderCollapse, setOptionSiderCollapse] = useState(true);
-  const [participantSiderCollapse, setParticipantSiderCollapse] = useState(true);
-  const [participantInfoCollapse, setParticipantInfoCollapse] = useState(true);
-  const [broken, setBroken] = useState(null)
-  const [newPaticipantsArr, setNewPaticipantsArr] = useState(null)
-  const [participantInfo, setParticipantInfo] = useState(null)
-  const [currentChannelName, setCurrentChannelName] = useState(channelname)
 
   const sideMenuItems = [
     {
@@ -118,10 +124,18 @@ export default function Channels(props) {
       }
   })
 
+  if (channelname === 'Create Channel') {
+    form.resetFields()
+  }
+
   useEffect(() => {
     if (createConversationData && !createConversationLoading && !createConversationFailed) {
-      conversationArray.unshift(createConversationData.data)
-      dispatch(setConversationArray([...conversationArray]))
+      dispatch(setConversationArray([createConversationData.data,...conversationArray]))
+
+      messageApi.open({
+        type: 'success',
+        content: `${createConversationData.data.name} channel created!`,
+      });
       dispatch(createConversationReset())
       setShowModal(false)
     }
@@ -132,6 +146,32 @@ export default function Channels(props) {
         content: createConversationFailed.message,
       });
       dispatch(createConversationReset())
+    }
+
+    if (updateConversationData && !updateConversationLoading && !updateConversationFailed) {
+      if (modalTitle === 'Delete Channel') {
+        const conversationIndex = conversationArray.findIndex(conversation => conversation._id === updateConversationData.data._id)
+        if (conversationIndex > -1) {
+          conversationArray.splice(conversationIndex, 1);
+          dispatch(setConversationArray([...conversationArray]))
+        }
+
+        messageApi.open({
+          type: 'success',
+          content: `${updateConversationData.data.name} channel deleted!`,
+        });
+        dispatch(updateConversationReset())
+        setModalTitle(null)
+        setShowModal(false)
+      }
+    }
+
+    if (!updateConversationData && !updateConversationLoading && updateConversationFailed) {
+      messageApi.open({
+        type: 'error',
+        content: updateConversationFailed.message,
+      });
+      dispatch(updateConversationReset())
     }
 
     if (addParticipantsData && !addParticipantsDataLoading && !addParticipantsDataFailed) {
@@ -148,8 +188,13 @@ export default function Channels(props) {
         dispatch(setConversationArray([...conversationArray]))
       }
 
+      messageApi.open({
+        type: 'success',
+        content: 'Adding Participants Success!',
+      });
       dispatch(addParticipantsReset())
       setNewPaticipantsArr(null)
+      setModalTitle(null)
       setShowModal(false)
     }
 
@@ -180,10 +225,15 @@ export default function Channels(props) {
         dispatch(setConversationArray([...conversationArray]))
       }
 
+      messageApi.open({
+        type: 'success',
+        content: 'Removing Participant Success!',
+      });
       dispatch(removeParticipantsReset())
       setParticipantInfoCollapse(true)
       setParticipantSiderCollapse(false)
       setParticipantInfo(null)
+      setModalTitle(null)
       setShowModal(false)
     }
 
@@ -219,6 +269,9 @@ export default function Channels(props) {
     createConversationData,
     createConversationLoading,
     createConversationFailed,
+    updateConversationData,
+    updateConversationLoading,
+    updateConversationFailed,
     addParticipantsData,
     addParticipantsDataLoading,
     addParticipantsDataFailed,
@@ -237,6 +290,7 @@ export default function Channels(props) {
     currentChannel,
     participantInfo,
     usersData,
+    modalTitle,
   ])
 
   const handleShowModal = (value) => {
@@ -255,8 +309,7 @@ export default function Channels(props) {
             deletedBy: userId
           }
         }
-        console.log('CHECK_conversationData', conversationData)
-        // dispatch(deleteConversation(conversationData))
+        dispatch(updateConversation(conversationData))
       }
     }
 
@@ -275,7 +328,7 @@ export default function Channels(props) {
 
     if (modalTitle === 'Remove Participant') {
       const adminArr = currentChannel.participants.filter(e => e.role === 'admin')
-      if (adminArr.length === 1) {
+      if (adminArr.length === 1 && participantInfo._id === userId) {
         messageApi.open({
           type: 'error',
           content: 'You cannot remove youself if you are the only admin left!',
@@ -707,7 +760,7 @@ export default function Channels(props) {
       </Layout>
 
       <Modal
-      title={modalTitle !== 'Remove Participant' ? modalTitle : null}
+      title={modalTitle}
       open={showModal} 
       footer={null} 
       destroyOnClose
@@ -724,7 +777,7 @@ export default function Channels(props) {
             modalTitle === 'Delete Channel' ?
             <>
               <Form.Item style={{textAlign: 'center'}}>
-                <Text style={{fontSize: '1.1rem'}}>
+                <Text className='prevent-select' style={{fontSize: '1.1rem'}}>
                   Type <Text style={{fontWeight: '700', fontSize: '1.1rem', fontStyle: 'italic'}}>{currentChannelName}</Text> and confirm to delete.
                 </Text>
               </Form.Item>
@@ -757,7 +810,7 @@ export default function Channels(props) {
                 margin: '10px 0 0 0'
               }}
               >
-                <Button danger htmlType="submit" /* loading={deleteConversationLoading} */>
+                <Button danger htmlType="submit" loading={updateConversationLoading}>
                   Confirm
                 </Button>
               </Form.Item>

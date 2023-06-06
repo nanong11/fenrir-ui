@@ -187,6 +187,43 @@ export function* removeParticipants() {
     });
 }
 
+export function* updateConversation() {
+    yield takeEvery('UPDATE_CONVERSATION', function* ({payload}) {
+        try {
+            yield put({
+                type: actions.UPDATE_CONVERSATION_LOADING,
+            });
+
+            const apiResult = yield updateConversationRequest(payload);
+            // console.log('apiResult', apiResult)
+            const result = apiResult.data;
+
+            if (apiResult.status === 200) {
+                yield put({
+                    type: actions.UPDATE_CONVERSATION_SUCCESS,
+                    payload: result,
+                });
+            } else {
+                yield put({
+                    type: actions.UPDATE_CONVERSATION_FAILED,
+                    payload: {
+                        data: result,
+                        message: 'Update Conversation Failed'
+                    }
+                });
+            }
+        } catch (error) {
+            yield put({
+                type: actions.UPDATE_CONVERSATION_FAILED,
+                payload: {
+                    data: error,
+                    message: 'Update Conversation Error'
+                }
+            });
+        }
+    });
+}
+
 function fetchConversationByUserIdRequest(payload) {
     return get(`/conversation/find_conversation_by_userid/${payload}`);  
 }
@@ -207,6 +244,10 @@ function removeParticipantsRequest(payload) {
     return putR(`/conversation/remove_participant/${payload.conversationId}`, payload.body);  
 }
 
+function updateConversationRequest(payload) {
+    return putR(`/conversation/update/${payload.conversationId}`, payload.body);  
+}
+
 export default function* rootSaga() {
     yield all([
       fork(fetchConversationByUserId),
@@ -214,5 +255,6 @@ export default function* rootSaga() {
       fork(fetchAllConversation),
       fork(addParticipants),
       fork(removeParticipants),
+      fork(updateConversation),
     ])
 }

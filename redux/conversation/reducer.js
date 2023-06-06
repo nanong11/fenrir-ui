@@ -20,6 +20,10 @@ const initialState = {
     removeParticipantsData: null,
     removeParticipantsDataLoading: false,
     removeParticipantsDataFailed: null,
+
+    updateConversationData: null,
+    updateConversationLoading: false,
+    updateConversationFailed: null,
 }
 
 export default function conversationReducer(state = initialState, action) {
@@ -153,6 +157,32 @@ export default function conversationReducer(state = initialState, action) {
                 removeParticipantsData: null,
                 removeParticipantsDataLoading: false,
                 removeParticipantsDataFailed: null,
+            }
+        case actions.UPDATE_CONVERSATION_SUCCESS:
+            return {
+                ...state,
+               updateConversationData: action.payload,
+               updateConversationLoading: false,
+               updateConversationFailed: null,
+            }
+        case actions.UPDATE_CONVERSATION_LOADING:
+            return {
+                ...state,
+                updateConversationLoading: true,
+            }
+        case actions.UPDATE_CONVERSATION_FAILED:
+            return {
+                ...state,
+               updateConversationData: null,
+               updateConversationLoading: false,
+               updateConversationFailed: action.payload,
+            }
+        case actions.UPDATE_CONVERSATION_RESET:
+            return {
+                ...state,
+               updateConversationData: null,
+               updateConversationLoading: false,
+               updateConversationFailed: null,
             }
         
         default:
