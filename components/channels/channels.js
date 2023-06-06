@@ -246,14 +246,18 @@ export default function Channels(props) {
   }
 
   const handleOnFinish = (value) => {
-    if (modalTitle === 'Create Channel') {
-      const newConversationData = {
-        name: value.channelName,
-        participants: [userId],
-        type: 'channel',
-        createdBy: userId
+    if (modalTitle === 'Delete Channel') {
+      if (value.channelName === currentChannelName) {
+        const conversationData = {
+          conversationId: currentChannel._id,
+          body: {
+            isActive: false,
+            deletedBy: userId
+          }
+        }
+        console.log('CHECK_conversationData', conversationData)
+        // dispatch(deleteConversation(conversationData))
       }
-      dispatch(createConversation(newConversationData))
     }
 
     if (modalTitle === 'Add Participant') {
@@ -270,14 +274,21 @@ export default function Channels(props) {
     }
 
     if (modalTitle === 'Remove Participant') {
-      const removeParticipantsData = {
-        conversationId: currentChannel._id,
-        body: {
-          participants: [participantInfo._id]
+      const adminArr = currentChannel.participants.filter(e => e.role === 'admin')
+      if (adminArr.length === 1) {
+        messageApi.open({
+          type: 'error',
+          content: 'You cannot remove youself if you are the only admin left!',
+        });
+      } else {
+        const removeParticipantsData = {
+          conversationId: currentChannel._id,
+          body: {
+            participants: [participantInfo._id]
+          }
         }
+        dispatch(removeParticipants(removeParticipantsData))
       }
-
-      dispatch(removeParticipants(removeParticipantsData))
     }
   }
   
@@ -313,6 +324,16 @@ export default function Channels(props) {
     setParticipantSiderCollapse(true)
   }
 
+  const handleCreateChannel = (value) => {
+    const newConversationData = {
+      name: value.channelName,
+      participants: [userId],
+      type: 'channel',
+      createdBy: userId
+    }
+    dispatch(createConversation(newConversationData))
+  }
+
   return (
     <ChannelsStyled
     colorprimary={colorPrimary}
@@ -338,7 +359,7 @@ export default function Channels(props) {
             minWidth: '150px'
           }}
           >
-            <Title level={3} style={{margin: 0}}>{currentChannel?.name ? currentChannel?.name : 'Select Channel'}</Title>
+            <Title level={3} style={{margin: 0}}>{currentChannel?.name ? currentChannel?.name : channelname === 'Create Channel' ? channelname : 'Select Channel'}</Title>
             <Link className='link-btn' onClick={handleParticipantsOnClick}>
               {currentChannel?.participants?.length ? `${currentChannel?.participants?.length} participants` : ''}
             </Link>
@@ -367,6 +388,38 @@ export default function Channels(props) {
             {
               currentChannel ?
               null // PUT HERE THE MESSAGES CONTENT
+              :
+              channelname === 'Create Channel' ?
+              <div style={{height: '100%', display: 'flex', justifyContent: 'center', padding: '20px'}}>
+                <Form
+                name='form'
+                form={form}
+                onFinish={handleCreateChannel}
+                size='large'
+                style={{width: '300px'}}
+                >
+                  <Form.Item
+                  name='channelName'
+                  rules={[
+                    { required: true, message: 'Channel name is required!' },
+                  ]}
+                  >
+                    <Input placeholder='Channel name' />
+                  </Form.Item>
+    
+                  <Form.Item
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    margin: '10px 0 0 0'
+                  }}
+                  >
+                    <Button htmlType="submit" loading={createConversationLoading}>
+                      CREATE
+                    </Button>
+                  </Form.Item>
+                </Form>
+              </div>
               :
               <div style={{height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
                 <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
@@ -415,9 +468,9 @@ export default function Channels(props) {
                     <UsergroupAddOutlined />
                     </Button>
                   </Tooltip>
-                  <Tooltip title='Create Channel'>
-                    <Button onClick={() => handleShowModal('Create Channel')} >
-                      Create
+                  <Tooltip title='Delete Channel'>
+                    <Button danger onClick={() => handleShowModal('Delete Channel')} >
+                      Delete
                     </Button>
                   </Tooltip>
                 </div>
@@ -668,15 +721,33 @@ export default function Channels(props) {
         size='large'
         >
           {
-            modalTitle === 'Create Channel' ?
+            modalTitle === 'Delete Channel' ?
             <>
+              <Form.Item style={{textAlign: 'center'}}>
+                <Text style={{fontSize: '1.1rem'}}>
+                  Type <Text style={{fontWeight: '700', fontSize: '1.1rem', fontStyle: 'italic'}}>{currentChannelName}</Text> and confirm to delete.
+                </Text>
+              </Form.Item>
+
               <Form.Item
               name='channelName'
               rules={[
-                { required: true, message: 'Channel name is required!' },
+                {
+                  validator: async (_, value) => {
+                    if (!value) {
+                      return Promise.reject('Type the channel name!');
+                    }
+
+                    if (value !== currentChannelName) {
+                      return Promise.reject('Channel name incorrect!');
+                    }
+      
+                    return Promise.resolve();
+                  },
+                },
               ]}
               >
-                <Input placeholder='Channel name' />
+                <Input style={{fontStyle: 'italic'}} placeholder={currentChannelName} />
               </Form.Item>
 
               <Form.Item
@@ -686,8 +757,8 @@ export default function Channels(props) {
                 margin: '10px 0 0 0'
               }}
               >
-                <Button htmlType="submit" loading={createConversationLoading}>
-                  CREATE
+                <Button danger htmlType="submit" /* loading={deleteConversationLoading} */>
+                  Confirm
                 </Button>
               </Form.Item>
             </>

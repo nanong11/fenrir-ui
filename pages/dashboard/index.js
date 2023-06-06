@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import DashboardStyled from './dashboard.styles'
 import { Layout, Menu, theme, Typography, Button, Avatar, Space } from 'antd';
 // import { useSelector } from 'react-redux';
-import { MenuFoldOutlined, MenuUnfoldOutlined, GroupOutlined, FileSearchOutlined, UsergroupAddOutlined, UserOutlined, AntDesignOutlined, ProfileOutlined } from '@ant-design/icons';
+import { MenuFoldOutlined, MenuUnfoldOutlined, GroupOutlined, FileSearchOutlined, UsergroupAddOutlined, UserOutlined, AntDesignOutlined, ProfileOutlined, PlusOutlined } from '@ant-design/icons';
 // import * as pallete from '@/styles/variables';
 import Profile from '@/components/profile/profile';
 import authActions from '@/redux/auth/actions'
@@ -62,6 +62,26 @@ export default function Dashboard() {
     return lastMessageBCreatedAtMilliseconds - lastMessageACreatedAtInMilliseconds
   })
 
+  const channelsChildren = useMemo(() => {
+    if (conversationArray && conversationArray.length > 0) {
+      const channelsArr = conversationArray.map((conversation) => {
+        return {
+          key: conversation.name,
+          label: conversation.name,
+        }
+      })
+      
+      return [
+        ...channelsArr,
+        {
+          key: 'Create Channel',
+          label: <Button type='dashed' size='small' style={{width: '50px'}} ><PlusOutlined /></Button>,
+        },
+      ]
+    }
+    
+  }, [conversationArray])
+
   const menuScrollbar = useRef(null)
 
   useEffect(() => {
@@ -98,12 +118,7 @@ export default function Dashboard() {
       icon: <GroupOutlined />,
       label: `CHANNELS`,
       allowed: 'user',
-      children: conversationArray.map((conversation) => {
-        return {
-          key: conversation.name,
-          label: conversation.name,
-        }
-      })
+      children: channelsChildren,
     },
     {
       key: 'FILES',
