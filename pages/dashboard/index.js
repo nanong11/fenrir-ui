@@ -67,7 +67,7 @@ export default function Dashboard() {
       const channelsArr = conversationArray.map((conversation) => {
         return {
           key: conversation.name,
-          label: conversation.name,
+          label: <Text className='prevent-select' >{conversation.name}</Text>,
         }
       })
       
@@ -110,26 +110,26 @@ export default function Dashboard() {
     {
       key: 'PROFILE',
       icon: <ProfileOutlined />,
-      label: `PROFILE`,
+      label: <Text className='prevent-select'>PROFILE</Text>,
       allowed: 'user'
     },
     {
       key: 'CHANNELS',
       icon: <GroupOutlined />,
-      label: `CHANNELS`,
+      label: <Text className='prevent-select'>CHANNELS</Text>,
       allowed: 'user',
       children: channelsChildren,
     },
     {
       key: 'FILES',
       icon: <FileSearchOutlined />,
-      label: `FILES`,
+      label: <Text className='prevent-select'>FILES</Text>,
       allowed: 'user'
     },
     {
       key: 'USERS',
       icon: <UsergroupAddOutlined />,
-      label: `USERS`,
+      label: <Text className='prevent-select'>USERS</Text>,
       allowed: 'admin',
     },
   ]

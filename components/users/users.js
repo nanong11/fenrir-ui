@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import UsersStyled from './users.styles'
-import { Button, Form, Input, Modal, Popconfirm, Select, Space, Table, Typography, message, theme } from 'antd'
+import { Button, Form, Input, Modal, Popconfirm, Select, Space, Table, Tooltip, Typography, message, theme } from 'antd'
 import usersActions from '@/redux/users/actions'
 import { useDispatch, useSelector } from 'react-redux'
 import { PlusOutlined, SearchOutlined } from '@ant-design/icons'
@@ -853,9 +853,14 @@ export default function Users() {
         margin: '0 0 16px 0'
       }}
       >
-        <Title level={3} style={{margin: '0'}}>USERS</Title>
+        <Title level={4} style={{margin: '0'}}>USERS</Title>
 
-        <Button type='primary' onClick={() => setShowAddUserModal(true)}><PlusOutlined />Add User</Button>
+        <Tooltip title='Add User'>
+          <Button type='primary' size='small' onClick={() => setShowAddUserModal(true)}>
+            <PlusOutlined />
+          </Button>
+        </Tooltip>
+        
         <AddUserModal
         showAddUserModal={showAddUserModal}
         setShowAddUserModal={setShowAddUserModal}

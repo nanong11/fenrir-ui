@@ -12,6 +12,7 @@ import utilityActions from '@/redux/utility/actions'
 import { io } from 'socket.io-client';
 import usersAction from '@/redux/users/actions'
 import conversationAction from '@/redux/conversation/actions'
+import { message } from 'antd'
 
 const socket = io.connect(process.env.NEXT_PUBLIC_API_SOCKETURL)
 
@@ -92,6 +93,7 @@ export default function Layout({ children }) {
   const [socketJoined, setSocketJoined] = useState(false)
 
   const scrollbar = useRef(null)
+  const [messageApi, messageContextHolder] = message.useMessage();
 
   useEffect(() => {
     // console.log('routerAsPath', router.asPath);
@@ -233,7 +235,12 @@ export default function Layout({ children }) {
     }
 
     const addedInConversation = (conversation) => {
+      socket.emit('join_conversation', conversation)
       dispatch(setConversationArray([conversation, ...conversationArray]))
+      messageApi.open({
+        type: 'info',
+        content: `Your are added in ${conversation.name}!`,
+      });
     }
 
     const participantRemoved = (conversation) => {
@@ -246,11 +253,29 @@ export default function Layout({ children }) {
     }
 
     const removedInConversation = (conversation) => {
+      socket.emit('leave_conversation', conversation)
       const conversationIndex = conversationArray.findIndex(item => item._id === conversation._id)
       if (conversationIndex > -1) {
         conversationArray.splice(conversationIndex, 1);
         dispatch(setConversationArray([...conversationArray]))
       }
+      messageApi.open({
+        type: 'info',
+        content: `Your are removed in ${conversation.name}!`,
+      });
+    }
+
+    const conversationDeleted = (conversation) => {
+      socket.emit('leave_conversation', conversation)
+      const conversationIndex = conversationArray.findIndex(item => item._id === conversation._id)
+      if (conversationIndex > -1) {
+        conversationArray.splice(conversationIndex, 1);
+        dispatch(setConversationArray([...conversationArray]))
+      }
+      messageApi.open({
+        type: 'info',
+        content: `${conversation.name} is deleted!`,
+      });
     }
 
     socket.on('incomming_user', incommingUser)
@@ -258,6 +283,7 @@ export default function Layout({ children }) {
     socket.on('added_in_conversation', addedInConversation)
     socket.on('participant_removed', participantRemoved)
     socket.on('removed_in_conversation', removedInConversation)
+    socket.on('conversation_deleted', conversationDeleted)
 
     return () => socket.off();
   }, [
@@ -283,6 +309,7 @@ export default function Layout({ children }) {
     socketJoined,
     allUsersArray,
     conversationArray,
+    messageApi,
   ])
 
   return (
@@ -350,6 +377,7 @@ export default function Layout({ children }) {
 
         <title>Fenrir</title>
       </Head>
+      {messageContextHolder}
       {
         loading ? <LoadingPage/>
         :

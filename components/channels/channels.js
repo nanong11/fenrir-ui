@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import ChannelsStyled from './channels.styles'
 import { useDispatch, useSelector } from 'react-redux'
 import { Typography, theme, Input, Layout, Button, Modal, Form, message, Select, Tooltip, Menu, List, Avatar, Empty } from 'antd'
-import { InfoCircleFilled, LeftOutlined, ProfileFilled, UserOutlined, UsergroupAddOutlined } from '@ant-design/icons';
+import { InfoCircleFilled, InfoCircleOutlined, LeftOutlined, ProfileFilled, UserOutlined, UsergroupAddOutlined } from '@ant-design/icons';
 import conversationAction from '@/redux/conversation/actions'
 import utilityActions from '@/redux/utility/actions'
 import Scrollbars from '@/components/utility/customScrollbar'
@@ -76,6 +76,7 @@ export default function Channels(props) {
   const [newPaticipantsArr, setNewPaticipantsArr] = useState(null)
   const [participantInfo, setParticipantInfo] = useState(null)
   const [currentChannelName, setCurrentChannelName] = useState(channelname)
+  const [hoverInfoCircle, setHoverInfoCircle] = useState(false)
 
   const currentChannel = conversationArray.find(conversation => conversation.name === channelname)
   const participants = currentChannel && currentChannel.participants ? currentChannel.participants : []
@@ -130,6 +131,7 @@ export default function Channels(props) {
 
   useEffect(() => {
     if (createConversationData && !createConversationLoading && !createConversationFailed) {
+      socketIo.emit('join_conversation', createConversationData.data)
       dispatch(setConversationArray([createConversationData.data,...conversationArray]))
 
       messageApi.open({
@@ -150,6 +152,9 @@ export default function Channels(props) {
 
     if (updateConversationData && !updateConversationLoading && !updateConversationFailed) {
       if (modalTitle === 'Delete Channel') {
+        socketIo.emit('deleted_conversation', updateConversationData.data)
+        socketIo.emit('leave_conversation', updateConversationData.data)
+
         const conversationIndex = conversationArray.findIndex(conversation => conversation._id === updateConversationData.data._id)
         if (conversationIndex > -1) {
           conversationArray.splice(conversationIndex, 1);
@@ -412,7 +417,7 @@ export default function Channels(props) {
             minWidth: '150px'
           }}
           >
-            <Title level={3} style={{margin: 0}}>{currentChannel?.name ? currentChannel?.name : channelname === 'Create Channel' ? channelname : 'Select Channel'}</Title>
+            <Title className='prevent-select' level={4} style={{margin: 0}}>{currentChannel?.name ? currentChannel?.name : channelname === 'Create Channel' ? channelname : 'Select Channel'}</Title>
             <Link className='link-btn' onClick={handleParticipantsOnClick}>
               {currentChannel?.participants?.length ? `${currentChannel?.participants?.length} participants` : ''}
             </Link>
@@ -420,7 +425,20 @@ export default function Channels(props) {
 
           {
             currentChannel ?
-            <InfoCircleFilled style={{fontSize: '1.8rem', color: colorPrimary, cursor: 'pointer'}} onClick={handleOptionOnClick} />
+            optionSiderCollapse && !hoverInfoCircle ?
+            <InfoCircleOutlined
+            style={{fontSize: '1.8rem', color: colorPrimary, cursor: 'pointer'}}
+            onClick={handleOptionOnClick}
+            onMouseEnter={() => setHoverInfoCircle(true)}
+            onMouseLeave={() => setHoverInfoCircle(false)}
+            />
+            :
+            <InfoCircleFilled
+            style={{fontSize: '1.8rem', color: colorPrimary, cursor: 'pointer'}}
+            onClick={handleOptionOnClick}
+            onMouseEnter={() => setHoverInfoCircle(true)}
+            onMouseLeave={() => setHoverInfoCircle(false)}
+            />
             : null
           }
         </Header>
@@ -518,7 +536,7 @@ export default function Channels(props) {
                 <div style={{display: 'flex', columnGap: '10px', justifyContent: 'space-between', margin: '0 0 8px 0'}}>
                   <Tooltip title='Add Participant'>
                     <Button tooltip='test' onClick={() => handleShowModal('Add Participant')}>
-                    <UsergroupAddOutlined />
+                      <UsergroupAddOutlined />
                     </Button>
                   </Tooltip>
                   <Tooltip title='Delete Channel'>
@@ -535,6 +553,7 @@ export default function Channels(props) {
                 mode="inline"
                 items={filteredSideMenuItems}
                 onClick={(e) => handleMenuItemOnClick(e)}
+                selectedKeys={null}
                 style={{
                   background: colorBgContainer,
                   border: 'none'
