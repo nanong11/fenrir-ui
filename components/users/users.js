@@ -33,6 +33,7 @@ const AddUserModal = (props) => {
 
   return (
     <Modal
+    title={<Text className='prevent-select'>Add User</Text>}
     open={showAddUserModal} 
     footer={null} 
     closable={false}
@@ -853,7 +854,7 @@ export default function Users() {
         margin: '0 0 16px 0'
       }}
       >
-        <Title level={4} style={{margin: '0'}}>USERS</Title>
+        <Title className='prevent-select' level={4} style={{margin: '0'}}>USERS</Title>
 
         <Tooltip title='Add User'>
           <Button type='primary' size='small' onClick={() => setShowAddUserModal(true)}>

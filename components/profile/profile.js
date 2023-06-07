@@ -9,7 +9,7 @@ export default function Profile(props) {
 
   return (
     <ProfileStyled>
-      <Title level={4} style={{margin: '0 0 20px 0'}}>PROFILE</Title>
+      <Title className='prevent-select' level={4} style={{margin: '0 0 20px 0'}}>PROFILE</Title>
       <Space
       direction='vertical'
       >
