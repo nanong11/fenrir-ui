@@ -259,7 +259,12 @@ const PasswordModal = (props) => {
 
 export default function Users() {
   const {
-    token: { colorBgContainer, colorPrimaryBg, borderRadius, colorError, colorInfo },
+    token: {
+      colorPrimaryBg,
+      borderRadius,
+      colorSuccessTextActive,
+      colorTextTertiary,
+    },
   } = theme.useToken();
 
   const dispatch = useDispatch()
@@ -303,12 +308,19 @@ export default function Users() {
           email: user.email ? user.email : '',
           role: user.role.charAt(0).toUpperCase() + user.role.slice(1),
           active: user.isActive ? 'Yes' : 'No',
-          status: user.isOnline ? 'online' : 'offline'
+          status: user.isOnline ?
+            <Text className='prevent-select' style={{color: colorSuccessTextActive}}>online</Text>
+            :
+            <Text className='prevent-select' style={{color: colorTextTertiary}}>offline</Text>
         })
       }
     }
     return data
-  }, [allUsersArray])
+  }, [
+    allUsersArray,
+    colorSuccessTextActive,
+    colorTextTertiary,
+  ])
  
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
@@ -437,8 +449,8 @@ export default function Users() {
           value: 'offline',
         },
       ],
-      onFilter: (value, record) => record.status.indexOf(value) === 0,
-      sorter: (a, b) => a.status.localeCompare(b.status),
+      onFilter: (value, record) => record.status.props.children.indexOf(value) === 0,
+      // sorter: (a, b) => a.status.props.children.localeCompare(b.status.props.children),
     },
     {
       title: 'Name',

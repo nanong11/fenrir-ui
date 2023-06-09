@@ -37,6 +37,8 @@ export default function Channels(props) {
       colorPrimary,
       colorPrimaryBgHover,
       borderRadius,
+      colorTextTertiary,
+      colorSuccessTextActive,
     },
   } = theme.useToken();
 
@@ -616,7 +618,12 @@ export default function Channels(props) {
                           <List.Item.Meta
                           avatar={<Avatar style={{fontSize: '1.3rem'}} src={item.profilePic ? item.profilePic : <UserOutlined /> } />}
                           title={<a onClick={() => handleParticipantsNameOnClick(item)}>{item.name}</a>}
-                          description={item.isOnline ? 'online' : 'offline'}
+                          description={
+                            item.isOnline ?
+                            <Text className='prevent-select' style={{color: colorSuccessTextActive}}>online</Text>
+                            :
+                            <Text className='prevent-select' style={{color: colorTextTertiary}}>offline</Text>
+                          }
                           style={{alignItems: 'center'}}
                           />
                         </List.Item>
@@ -643,7 +650,12 @@ export default function Channels(props) {
                           <List.Item.Meta
                           avatar={<Avatar style={{fontSize: '1.3rem'}} src={item.profilePic ? item.profilePic : <UserOutlined /> } />}
                           title={<a onClick={() => handleParticipantsNameOnClick(item)}>{item.name}</a>}
-                          description={item.isOnline ? 'online' : 'offline'}
+                          description={
+                            item.isOnline ?
+                            <Text className='prevent-select' style={{color: colorSuccessTextActive}}>online</Text>
+                            :
+                            <Text className='prevent-select' style={{color: colorTextTertiary}}>offline</Text>
+                          }
                           style={{alignItems: 'center'}}
                           />
                         </List.Item>
