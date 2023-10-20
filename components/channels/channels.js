@@ -7,6 +7,7 @@ import conversationAction from '@/redux/conversation/actions'
 import utilityActions from '@/redux/utility/actions'
 import Scrollbars from '@/components/utility/customScrollbar'
 import moment from 'moment-timezone';
+import MessageCard from '@/components/messages/messageCard'
 
 const {
   createConversation,
@@ -46,6 +47,7 @@ export default function Channels(props) {
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
 
+  const view = useSelector(state => state.utilityReducer.view)
   const usersData = useSelector(state => state.authReducer.usersData)
   const userId = usersData && usersData.data ? usersData.data._id : null
   const role = usersData?.data?.role
@@ -460,7 +462,10 @@ export default function Channels(props) {
           >
             {
               currentChannel ?
-              null // PUT HERE THE MESSAGES CONTENT
+              (!optionSiderCollapse || !participantInfoCollapse || !participantSiderCollapse) && view === 'MOBILE' ?
+              ''
+              :
+              <MessageCard currentChannel={currentChannel} />
               :
               channelname === 'Create Channel' ?
               <div style={{height: '100%', display: 'flex', justifyContent: 'center', padding: '20px'}}>
@@ -516,7 +521,7 @@ export default function Channels(props) {
           // }}
           style={{
             background: colorBgContainer,
-            // border: `1px solid ${colorPrimaryBg}`,
+            border: !optionSiderCollapse ? `1px solid ${colorPrimaryBg}` : 'none',
             marginTop: '2px',
             height: '100%',
           }}
@@ -581,7 +586,7 @@ export default function Channels(props) {
           // }}
           style={{
             background: colorBgContainer,
-            // border: `1px solid ${colorPrimaryBg}`,
+            border: !participantSiderCollapse ? `1px solid ${colorPrimaryBg}` : 'none',
             marginTop: '2px',
             height: '100%'
           }}
@@ -684,7 +689,7 @@ export default function Channels(props) {
           // }}
           style={{
             background: colorBgContainer,
-            // border: `1px solid ${colorPrimaryBg}`,
+            border: !participantInfoCollapse ? `1px solid ${colorPrimaryBg}` : 'none',
             marginTop: '2px',
             height: '100%'
           }}

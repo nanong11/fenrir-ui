@@ -313,6 +313,7 @@ export default function Dashboard() {
                 // padding: 16,
                 minHeight: '100%',
                 background: colorBgContainer,
+                display: 'flex',
               }}
               >
                 {selectedMenu}
